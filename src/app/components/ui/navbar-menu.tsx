@@ -43,6 +43,7 @@ createAppKit({
   metadata: metadata,
   projectId,
   features: {
+    connectMethodsOrder: ['email', 'social', 'wallet'],
     analytics: true // Optional - defaults to your Cloud configuration
   }
 })
