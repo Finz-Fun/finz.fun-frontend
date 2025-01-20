@@ -190,7 +190,8 @@ export default function Home() {
                       type="button"
                       className="inline-flex items-center justify-center w-full px-4 py-2 mt-4 text-xs font-bold tracking-widest text-white uppercase transition-all duration-200 bg-transparent border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-900 hover:border-gray-900 hover:bg-black hover:text-white"
                     >
-                      Trade Now
+                      <Link href={"/coin"} >Trade Now</Link>
+                     
                     </button>
                   </div>
                 </div>
