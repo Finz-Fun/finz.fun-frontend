@@ -15,7 +15,7 @@ const coinItems = [
   {
     id: 1,
     title: "Auraui Art 1",
-    imageUrl: "https://www.auraui.com/web3Images/nft/nft16.jpeg",
+    imageUrl: "/image.png",
     priceEth: 3.4,
     priceUsd: 6652,
     avatarUrl: "/pngwing.com.png",
@@ -23,7 +23,7 @@ const coinItems = [
   {
     id: 2,
     title: "Auraui Art 2",
-    imageUrl: "https://www.auraui.com/web3Images/nft/nft17.jpeg",
+    imageUrl: "/image.png",
     priceEth: 1.4,
     priceUsd: 2352,
     avatarUrl: "https://ibb.co/sb9q9K7",
@@ -31,7 +31,7 @@ const coinItems = [
   {
     id: 3,
     title: "Auraui Art 3",
-    imageUrl: "https://www.auraui.com/web3Images/nft/nft18.jpeg",
+    imageUrl: "/image.png",
     priceEth: 2.4,
     priceUsd: 4552,
     avatarUrl: "https://ibb.co/sb9q9K7",
@@ -39,7 +39,7 @@ const coinItems = [
   {
     id: 4,
     title: "Auraui Art 3",
-    imageUrl: "https://www.auraui.com/web3Images/nft/nft18.jpeg",
+    imageUrl: "/image.png",
     priceEth: 2.4,
     priceUsd: 4552,
     avatarUrl: "https://www.auraui.com/web3Images/nft/nft1.png",
@@ -47,7 +47,7 @@ const coinItems = [
   {
     id: 5,
     title: "Auraui Art 3",
-    imageUrl: "https://www.auraui.com/web3Images/nft/nft18.jpeg",
+    imageUrl: "/image.png",
     priceEth: 2.4,
     priceUsd: 4552,
     avatarUrl: "https://www.auraui.com/web3Images/nft/nft1.png",
@@ -55,7 +55,7 @@ const coinItems = [
   {
     id: 6,
     title: "Auraui Art 3",
-    imageUrl: "https://www.auraui.com/web3Images/nft/nft18.jpeg",
+    imageUrl: "/image.png",
     priceEth: 2.4,
     priceUsd: 4552,
     avatarUrl: "https://www.auraui.com/web3Images/nft/nft1.png",
@@ -63,7 +63,7 @@ const coinItems = [
   {
     id: 7,
     title: "Auraui Art 3",
-    imageUrl: "https://www.auraui.com/web3Images/nft/nft18.jpeg",
+    imageUrl: "/image.png",
     priceEth: 2.4,
     priceUsd: 4552,
     avatarUrl: "https://www.auraui.com/web3Images/nft/nft1.png",
@@ -71,7 +71,7 @@ const coinItems = [
   {
     id: 8,
     title: "Auraui Art 3",
-    imageUrl: "https://www.auraui.com/web3Images/nft/nft18.jpeg",
+    imageUrl: "/image.png",
     priceEth: 2.4,
     priceUsd: 4552,
     avatarUrl: "https://www.auraui.com/web3Images/nft/nft1.png",
@@ -79,7 +79,7 @@ const coinItems = [
   {
     id: 9,
     title: "Auraui Art 3",
-    imageUrl: "https://www.auraui.com/web3Images/nft/nft18.jpeg",
+    imageUrl: "/image.png",
     priceEth: 2.4,
     priceUsd: 4552,
     avatarUrl: "https://www.auraui.com/web3Images/nft/nft1.png",
@@ -87,7 +87,7 @@ const coinItems = [
   {
     id: 10,
     title: "Auraui Art 3",
-    imageUrl: "https://www.auraui.com/web3Images/nft/nft18.jpeg",
+    imageUrl: "/image.png",
     priceEth: 2.4,
     priceUsd: 4552,
     avatarUrl: "https://www.auraui.com/web3Images/nft/nft1.png",
@@ -95,7 +95,7 @@ const coinItems = [
   {
     id: 11,
     title: "Auraui Art 3",
-    imageUrl: "https://www.auraui.com/web3Images/nft/nft18.jpeg",
+    imageUrl: "/image.png",
     priceEth: 2.4,
     priceUsd: 4552,
     avatarUrl: "https://www.auraui.com/web3Images/nft/nft1.png",
@@ -103,7 +103,7 @@ const coinItems = [
   {
     id: 12,
     title: "Auraui Art 3",
-    imageUrl: "https://www.auraui.com/web3Images/nft/nft18.jpeg",
+    imageUrl: "/image.png",
     priceEth: 2.4,
     priceUsd: 4552,
     avatarUrl: "https://www.auraui.com/web3Images/nft/nft1.png",
