@@ -6,6 +6,15 @@ import { ChevronDown } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
 import { buttonVariants } from "../components/ui/button";
 import Image from "next/image";
+import {
+  Table,
+  TableBody,
+  TableCaption,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "../components/ui/table";
 
 interface TokenOption {
   value: string;
@@ -20,7 +29,7 @@ export default function Coin() {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [activeButton, setActiveButton] = useState<string | null>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
-  
+
   const tokenOptions: TokenOption[] = [
     { value: "SOL", label: "SOL", image: "/pngwing.com.png" },
     { value: "USDT", label: "USDT", image: "/pngwing.com.png" },
@@ -32,18 +41,16 @@ export default function Coin() {
     if (activeTab === "SELL") {
       return ["25%", "50%", "75%", "100%"];
     }
-    // Only show quick buy options if SOL is selected
     if (activeTab === "BUY" && selectedToken === "SOL") {
       return ["0.5", "1", "2", "5"];
     }
     return [];
   };
+
   const handleQuickBuyClick = (value: string) => {
     setActiveButton(value);
-    setAmount(value); // Update the input field
+    setAmount(value);
   };
-
-
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -52,8 +59,8 @@ export default function Coin() {
       }
     };
 
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
   const handleCopyToClipboard = (value: string) => {
@@ -72,9 +79,8 @@ export default function Coin() {
   const handleTokenSelect = (value: string) => {
     setSelectedToken(value);
     setIsDropdownOpen(false);
-    setActiveButton(null); // Reset active button when token changes
+    setActiveButton(null);
   };
-
 
   const handleTabChange = (tab: string) => {
     setActiveTab(tab);
@@ -83,7 +89,6 @@ export default function Coin() {
       setSelectedToken("BANA");
     }
   };
-
 
   const renderTokenSelector = () => {
     if (activeTab === "SELL") {
@@ -117,7 +122,7 @@ export default function Coin() {
           <span>{selectedToken}</span>
           <ChevronDown className="w-4 h-4 absolute right-0 top-1/2 -translate-y-1/2 text-gray-400" />
         </button>
-        
+
         {isDropdownOpen && (
           <div className="absolute top-full right-0 mt-2 w-32 bg-[#141628] rounded-lg shadow-lg py-1 z-50">
             {tokenOptions.map((token) => (
@@ -187,6 +192,73 @@ export default function Coin() {
             allowFullScreen
             className="rounded-lg"
           ></iframe>
+
+          {/* Table Below the Chart */}
+          <div className="mt-6">
+            <Table>
+              <TableCaption>The latest txs on this token.</TableCaption>
+              <TableHeader>
+                <TableRow>
+                  <TableHead className="">Account</TableHead>
+                  <TableHead>Type</TableHead>
+                  <TableHead>Time</TableHead>
+                  <TableHead>SOL</TableHead>
+                  <TableHead>Amount</TableHead>
+                  <TableHead className="text-right">Transaction</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                <TableRow>
+                  <TableCell className="font-medium">BrSp...ZEYi</TableCell>
+                  <TableCell>BUY</TableCell>
+                  <TableCell>Jan 21 19:19:54</TableCell>
+                  <TableCell>2.5</TableCell>
+                  <TableCell>CCs</TableCell>
+                  <TableCell className="text-right">$250.00</TableCell>
+                </TableRow>
+                <TableRow>
+                  <TableCell className="font-medium">BrSp...ZEYi</TableCell>
+                  <TableCell>BUY</TableCell>
+                  <TableCell>Jan 21 19:19:54</TableCell>
+                  <TableCell>1</TableCell>
+                  <TableCell>CCs</TableCell>
+                  <TableCell className="text-right">$250.00</TableCell>
+                </TableRow>
+                <TableRow>
+                  <TableCell className="font-medium">BrSp...ZEYi</TableCell>
+                  <TableCell>SELL</TableCell>
+                  <TableCell>Jan 21 19:19:54</TableCell>
+                  <TableCell>0.8</TableCell>
+                  <TableCell>CCs</TableCell>
+                  <TableCell className="text-right">$250.00</TableCell>
+                </TableRow>
+                <TableRow>
+                  <TableCell className="font-medium">BrSp...ZEYi</TableCell>
+                  <TableCell>BUY</TableCell>
+                  <TableCell>Jan 21 19:19:54</TableCell>
+                  <TableCell>0.1</TableCell>
+                  <TableCell>CCs</TableCell>
+                  <TableCell className="text-right">$250.00</TableCell>
+                </TableRow>
+                <TableRow>
+                  <TableCell className="font-medium">BrSp...ZEYi</TableCell>
+                  <TableCell>SELL</TableCell>
+                  <TableCell>Jan 21 19:19:54</TableCell>
+                  <TableCell>0.8</TableCell>
+                  <TableCell>CCs</TableCell>
+                  <TableCell className="text-right">$250.00</TableCell>
+                </TableRow>
+                <TableRow>
+                  <TableCell className="font-medium">BrSp...ZEYi</TableCell>
+                  <TableCell>SELL</TableCell>
+                  <TableCell>Jan 21 19:19:54</TableCell>
+                  <TableCell>0.8</TableCell>
+                  <TableCell>CCs</TableCell>
+                  <TableCell className="text-right">$250.00</TableCell>
+                </TableRow>
+              </TableBody>
+            </Table>
+          </div>
         </div>
 
         <div className="w-full lg:w-1/4 flex flex-col gap-4">
@@ -224,27 +296,26 @@ export default function Coin() {
                   value={amount}
                   onChange={(e) => {
                     setAmount(e.target.value);
-                    setActiveButton(null); // Reset active button when input changes
+                    setActiveButton(null);
                   }}
                   className="bg-transparent text-lg outline-none w-full"
                 />
                 {renderTokenSelector()}
               </div>
-              <div className="text-xs text-gray-500 mt-1">
-                ~ 2.34578 SOL
-              </div>
+              <div className="text-xs text-gray-500 mt-1">~ 2.34578 SOL</div>
             </div>
 
-
-          
-               {/* Only render the quick action buttons if there are options */}
             {getButtonOptions().length > 0 && (
               <div className="flex gap-2 mb-4">
                 {getButtonOptions().map((value) => (
                   <button
                     key={value}
                     className={`flex-1 py-1 rounded-md text-sm bg-[#141628] 
-                      ${activeButton === value ? 'bg-[#3f51b5] text-white' : 'text-gray-400'}
+                      ${
+                        activeButton === value
+                          ? "bg-[#3f51b5] text-white"
+                          : "text-gray-400"
+                      }
                       hover:bg-[#3f51b5] hover:text-white transition-colors duration-200`}
                     onClick={() => handleQuickBuyClick(value)}
                     onMouseEnter={() => setActiveButton(value)}
@@ -255,14 +326,14 @@ export default function Coin() {
                 ))}
               </div>
             )}
-      
 
-            {/* Place Trade Button */}
             <button
               className={`w-full py-2 rounded-md text-sm font-medium transition-colors duration-200
-                ${activeTab === "BUY" 
-                  ? "bg-[#4caf50] hover:bg-[#45a049] text-white" 
-                  : "bg-[#d93941] hover:bg-[#c62828] text-white"}`}
+                ${
+                  activeTab === "BUY"
+                    ? "bg-[#4caf50] hover:bg-[#45a049] text-white"
+                    : "bg-[#d93941] hover:bg-[#c62828] text-white"
+                }`}
             >
               Place {activeTab.toLowerCase()} order
             </button>
