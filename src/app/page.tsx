@@ -100,14 +100,14 @@ const coinItems = [
     priceUsd: 4552,
     avatarUrl: "https://www.auraui.com/web3Images/nft/nft1.png",
   },
-  {
-    id: 12,
-    title: "Auraui Art 3",
-    imageUrl: "/image.png",
-    priceEth: 2.4,
-    priceUsd: 4552,
-    avatarUrl: "https://www.auraui.com/web3Images/nft/nft1.png",
-  },
+  // {
+  //   id: 12,
+  //   title: "Auraui Art 3",
+  //   imageUrl: "/image.png",
+  //   priceEth: 2.4,
+  //   priceUsd: 4552,
+  //   avatarUrl: "https://www.auraui.com/web3Images/nft/nft1.png",
+  // },
 ];
 
 export default function Home() {
