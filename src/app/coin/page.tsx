@@ -15,6 +15,13 @@ import {
   TableHeader,
   TableRow,
 } from "../components/ui/table";
+import dynamic from "next/dynamic";
+import { useRouter } from "next/router";
+
+
+const TradingChart = dynamic(() => import('../../components/ui/TradingChart'), {
+  ssr: false
+});
 
 interface TokenOption {
   value: string;
@@ -29,6 +36,19 @@ export default function Coin() {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [activeButton, setActiveButton] = useState<string | null>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
+
+  const router = useRouter();
+  const { tokenMint } = router.query;
+
+  if (!router.isReady) {
+    return <div>Loading...</div>;
+  }
+
+  // {tokenMint ? (
+  //   <TradingChart tokenMint={tokenMint as string} />
+  // ) : (
+  //   <div>Please provide a token mint address</div>
+  // )}
 
   const tokenOptions: TokenOption[] = [
     { value: "SOL", label: "SOL", image: "/pngwing.com.png" },
@@ -262,7 +282,9 @@ export default function Coin() {
         </div>
 
         <div className="w-full lg:w-1/4 flex flex-col gap-4">
-          <Tweet id="1879487106244104651" />
+          <div className="h-[500px] overflow-hidden">
+            <Tweet id="1881588154299232550" />
+          </div>
 
           <div className="bg-[#0a0b1e] rounded-lg p-4 text-gray-200">
             <div className="flex mb-4 border-b border-gray-800">

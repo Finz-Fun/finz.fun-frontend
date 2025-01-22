@@ -3,8 +3,8 @@ import { useEffect, useRef, useState } from 'react';
 import { io, Socket } from 'socket.io-client';
 import { Candle, PriceUpdate } from '../../types/trading';
 
-const WS_URL = process.env.WS_URI || 'http://localhost:8080';
-const TOKEN_MINT = 'BrZURiP9oNPQ5KxUMy6hjJUZZi4az2wQot7bhCq9pJHZ';
+const WS_URL = process.env.NEXT_PUBLIC_WS_URI || 'http://localhost:8080';
+
 
 const getPriceFormatter = (currency: 'SOL' | 'USD') => {
   return {
@@ -18,7 +18,7 @@ const getPriceFormatter = (currency: 'SOL' | 'USD') => {
   };
 };
 
-const TradingChart = () => {
+const TradingChart = ({tokenMint}: {tokenMint: string}) => {
   const chartContainerRef = useRef<HTMLDivElement>(null);
   const chartRef = useRef<IChartApi | null>(null);
   const candlestickSeriesRef = useRef<ISeriesApi<"Candlestick"> | null>(null);
@@ -28,6 +28,8 @@ const TradingChart = () => {
   const [displayCurrency, setDisplayCurrency] = useState<'SOL' | 'USD'>('SOL');
   const solPriceRef = useRef<number>(0);
 
+
+
   useEffect(() => {
     const cleanup = initializeSocket();
     return () => cleanup();
@@ -35,6 +37,7 @@ const TradingChart = () => {
 
   useEffect(() => {
     const updateSolPrice = async () => {
+      console.log(WS_URL)
       try {
         const response = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=solana&vs_currencies=usd');
         const data = await response.json();
@@ -78,7 +81,7 @@ const updateChartData = () => {
 const fetchHistoricalData = async () => {
   try {
     const [candlesResponse, solPriceResponse] = await Promise.all([
-      fetch(`${WS_URL}/candles/${TOKEN_MINT}`),
+      fetch(`${WS_URL}/candles/${tokenMint}`),
       fetch('https://api.coingecko.com/api/v3/simple/price?ids=solana&vs_currencies=usd')
     ]);
 
@@ -111,7 +114,7 @@ const fetchHistoricalData = async () => {
     socket.on('connect', () => {
       setIsConnected(true);
       console.log('Socket Connected');
-      socket.emit('subscribe', TOKEN_MINT);
+      socket.emit('subscribe', tokenMint);
     });
 
     socket.on('disconnect', () => {
@@ -159,7 +162,7 @@ const fetchHistoricalData = async () => {
     });
 
     return () => {
-      socket.emit('unsubscribe', TOKEN_MINT);
+      socket.emit('unsubscribe', tokenMint);
       socket.disconnect();
     };
   };
@@ -168,30 +171,77 @@ const fetchHistoricalData = async () => {
     if (!chartContainerRef.current) return;
 
     const chart = createChart(chartContainerRef.current, {
-      width: 600,
-      height: 400,
+      width: chartContainerRef.current.clientWidth,
+      height: 600,
       layout: {
-        background: { color: '#131722' },
-        textColor: '#d1d4dc',
+        background: { color: '#ffffff' },
+        textColor: '#333333',
+        fontSize: 12,
       },
       grid: {
-        vertLines: { color: '#363c4e' },
-        horzLines: { color: '#363c4e' },
+        vertLines: { color: '#f0f0f0', style: 1 },
+        horzLines: { color: '#f0f0f0', style: 1 },
+      },
+      crosshair: {
+        mode: 1,
+        vertLine: {
+          color: '#758696',
+          width: 1,
+          style: 3,
+          labelBackgroundColor: '#ffffff',
+        },
+        horzLine: {
+          color: '#758696',
+          width: 1,
+          style: 3,
+          labelBackgroundColor: '#ffffff',
+        },
       },
       timeScale: {
-        borderColor: '#555555',
+        borderColor: '#e1e4e8',
         timeVisible: true,
         secondsVisible: true,
+        barSpacing: 6,
+        minBarSpacing: 2,
+        rightOffset: 12,
+        lockVisibleTimeRangeOnResize: true,
+        tickMarkFormatter: (time: number) => {
+          const date = new Date(time * 1000);
+          const month = date.toLocaleString('default', { month: 'short' });
+          const day = date.getDate();
+          const hours = date.getHours().toString().padStart(2, '0');
+          const minutes = date.getMinutes().toString().padStart(2, '0');
+          
+          // Show different formats based on the time
+          const now = new Date();
+          const isToday = date.toDateString() === now.toDateString();
+          const isThisYear = date.getFullYear() === now.getFullYear();
+          
+          if (isToday) {
+            return `${hours}:${minutes}`;
+          } else if (isThisYear) {
+            return `${month} ${day} ${hours}:${minutes}`;
+          } else {
+            return `${month} ${day}, ${date.getFullYear()}`;
+          }
+        },
+      },
+      rightPriceScale: {
+        borderColor: '#e1e4e8',
+        scaleMargins: {
+          top: 0.2,
+          bottom: 0.2,
+        },
       },
     });
 
     const candlestickSeries = chart.addCandlestickSeries({
-      upColor: '#4caf50',
-      downColor: '#f44336',
-      borderUpColor: '#4caf50',
-      borderDownColor: '#f44336',
-      wickUpColor: '#4caf50',
-      wickDownColor: '#f44336',
+      upColor: '#26a69a',
+      downColor: '#ef5350',
+      borderUpColor: '#26a69a',
+      borderDownColor: '#ef5350',
+      wickUpColor: '#26a69a',
+      wickDownColor: '#ef5350',
       priceFormat: getPriceFormatter(displayCurrency),
     });
 
@@ -210,6 +260,17 @@ const fetchHistoricalData = async () => {
 
     window.addEventListener('resize', handleResize);
     handleResize();
+
+    chart.timeScale().applyOptions({
+      timeVisible: true,
+      secondsVisible: false,
+      ticksVisible: true,
+    });
+
+    chart.timeScale().setVisibleLogicalRange({
+      from: -150, 
+      to: 20,
+    });
 
     return () => {
       window.removeEventListener('resize', handleResize);
