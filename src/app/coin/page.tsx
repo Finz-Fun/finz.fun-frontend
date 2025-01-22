@@ -16,11 +16,10 @@ import {
   TableRow,
 } from "../components/ui/table";
 import dynamic from "next/dynamic";
-import { useRouter } from "next/router";
+import { usePathname, useSearchParams, useRouter } from "next/navigation";
 
-
-const TradingChart = dynamic(() => import('../../components/ui/TradingChart'), {
-  ssr: false
+const TradingChart = dynamic(() => import("../../components/ui/TradingChart"), {
+  ssr: false,
 });
 
 interface TokenOption {
@@ -38,14 +37,12 @@ export default function Coin() {
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   const router = useRouter();
-  const { tokenMint } = router.query;
-
-  if (!router.isReady) {
-    return <div>Loading...</div>;
-  }
-
+  const searchParams = useSearchParams();
+  console.log(searchParams.get("tokenMint"));
+  const tokenMint = searchParams.get("tokenMint");
+  const [displayCurrency, setDisplayCurrency] = useState<"SOL" | "USD">("SOL");
   // {tokenMint ? (
-  //   <TradingChart tokenMint={tokenMint as string} />
+
   // ) : (
   //   <div>Please provide a token mint address</div>
   // )}
@@ -74,7 +71,10 @@ export default function Coin() {
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(event.target as Node)
+      ) {
         setIsDropdownOpen(false);
       }
     };
@@ -183,10 +183,7 @@ export default function Coin() {
         </div>
         <div className="flex flex-col">
           <p className="text-sm text-muted-foreground flex items-center">
-            ca:{" "}
-            <span id="contract-address">
-              39nGsPpnu9gE9qjo6quMBVZcZnASvjj5Y9DBfNLhpump
-            </span>
+            ca: <span id="contract-address">{tokenMint}</span>
             <FaCopy
               className="ml-2 cursor-pointer"
               onClick={() => {
@@ -200,19 +197,35 @@ export default function Coin() {
             />
           </p>
         </div>
+        <div className="flex flex-col">
+          {" "}
+          <select
+            value={displayCurrency}
+            onChange={(e) =>
+              setDisplayCurrency(e.target.value as "SOL" | "USD")
+            }
+            className="px-4 py-2 bg-[#2a2e39] text-white rounded"
+          >
+            <option value="SOL">SOL</option>
+            <option value="USD">USD</option>
+          </select>
+        </div>
       </div>
 
       <div className="flex flex-col lg:flex-row gap-4">
         <div className="w-full lg:w-3/4">
-          <iframe
+          {/* <iframe
             src="https://s.tradingview.com/embed-widget/symbol-overview/?symbol=BINANCE:BTCUSDT&locale=en"
             width="100%"
             height="500"
             frameBorder="0"
             allowFullScreen
             className="rounded-lg"
-          ></iframe>
-
+          ></iframe> */}
+          <TradingChart
+            displayCurrency={displayCurrency}
+            tokenMint={tokenMint as string}
+          />
           {/* Table Below the Chart */}
           <div className="mt-6">
             <Table>
@@ -282,11 +295,11 @@ export default function Coin() {
         </div>
 
         <div className="w-full lg:w-1/4 flex flex-col gap-4">
-          <div className="h-[500px] overflow-hidden">
+          <div className="h-[530px] overflow-hidden">
             <Tweet id="1881588154299232550" />
           </div>
 
-          <div className="bg-[#0a0b1e] rounded-lg p-4 text-gray-200">
+          <div className="bg-[#0a0b1e] mt-9 rounded-lg p-4 text-gray-200">
             <div className="flex mb-4 border-b border-gray-800">
               <button
                 className={`pb-2 px-4 text-sm font-medium ${

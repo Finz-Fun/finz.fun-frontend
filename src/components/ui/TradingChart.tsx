@@ -18,14 +18,13 @@ const getPriceFormatter = (currency: 'SOL' | 'USD') => {
   };
 };
 
-const TradingChart = ({tokenMint}: {tokenMint: string}) => {
+const TradingChart = ({tokenMint, displayCurrency}: {tokenMint: string, displayCurrency:"SOL"|"USD"}) => {
   const chartContainerRef = useRef<HTMLDivElement>(null);
   const chartRef = useRef<IChartApi | null>(null);
   const candlestickSeriesRef = useRef<ISeriesApi<"Candlestick"> | null>(null);
   const socketRef = useRef<Socket | null>(null);
   const [isConnected, setIsConnected] = useState(false);
   const lastCandleRef = useRef<Candle | null>(null);
-  const [displayCurrency, setDisplayCurrency] = useState<'SOL' | 'USD'>('SOL');
   const solPriceRef = useRef<number>(0);
 
 
@@ -172,7 +171,7 @@ const fetchHistoricalData = async () => {
 
     const chart = createChart(chartContainerRef.current, {
       width: chartContainerRef.current.clientWidth,
-      height: 600,
+      height: 500,
       layout: {
         background: { color: '#ffffff' },
         textColor: '#333333',
@@ -287,20 +286,20 @@ const fetchHistoricalData = async () => {
   return (
     <div className="p-4">
       <div className="mb-4">
-        <select 
+        {/* <select 
           value={displayCurrency}
           onChange={(e) => setDisplayCurrency(e.target.value as 'SOL' | 'USD')}
           className="px-4 py-2 bg-[#2a2e39] text-white rounded"
         >
           <option value="SOL">SOL</option>
           <option value="USD">USD</option>
-        </select>
+        </select> */}
       </div>
       <div 
         ref={chartContainerRef} 
-        className="w-full h-[600px] bg-[#131722] rounded-lg shadow-lg"
+        className="w-full h-[500px] bg-[#131722] rounded-lg shadow-lg"
       />
-      <div className="mt-4 flex gap-4">
+      {/* <div className="mt-4 flex gap-4">
         <div 
           className={`px-4 py-2 rounded ${
             isConnected ? 'bg-green-600' : 'bg-red-600'
@@ -314,7 +313,7 @@ const fetchHistoricalData = async () => {
         >
           Refresh Data
         </button>
-      </div>
+      </div> */}
     </div>
   );
 };
