@@ -38,14 +38,8 @@ export default function Coin() {
 
   const router = useRouter();
   const searchParams = useSearchParams();
-  console.log(searchParams.get("tokenMint"));
   const tokenMint = searchParams.get("tokenMint");
   const [displayCurrency, setDisplayCurrency] = useState<"SOL" | "USD">("SOL");
-  // {tokenMint ? (
-
-  // ) : (
-  //   <div>Please provide a token mint address</div>
-  // )}
 
   const tokenOptions: TokenOption[] = [
     { value: "SOL", label: "SOL", image: "/pngwing.com.png" },
@@ -140,7 +134,7 @@ export default function Coin() {
             className="rounded-full"
           />
           <span className="mr-2">{selectedToken}</span>
-          <ChevronDown className="w-4  h-4 absolute right-0 top-1/2 -translate-y-1/2 text-gray-400" />
+          <ChevronDown className="w-4 h-4 absolute right-0 top-1/2 -translate-y-1/2 text-gray-400" />
         </button>
 
         {isDropdownOpen && (
@@ -170,7 +164,7 @@ export default function Coin() {
   return (
     <div className="min-h-screen bg-primary-gradient">
       <div className="p-4 mt-52">
-        <div className="flex items-center gap-4 mb-4">
+        <div className="flex flex-wrap items-center gap-4 mb-4">
           <img
             src="/pngwing.com.png"
             alt="Rounded Avatar"
@@ -198,12 +192,10 @@ export default function Coin() {
               />
             </p>
           </div>
-          <div className="flex ">
-          market cap: <span> $22,500</span>
-
+          <div className="flex flex-col">
+            <p className="text-sm">market cap: <span>$22,500</span></p>
           </div>
           <div className="flex flex-col">
-            {" "}
             <select
               value={displayCurrency}
               onChange={(e) =>
@@ -217,27 +209,20 @@ export default function Coin() {
           </div>
         </div>
 
+        {/* Remaining Code */}
         <div className="flex flex-col lg:flex-row gap-4">
+          {/* Chart and Table */}
           <div className="w-full lg:w-3/4">
-            {/* <iframe
-            src="https://s.tradingview.com/embed-widget/symbol-overview/?symbol=BINANCE:BTCUSDT&locale=en"
-            width="100%"
-            height="500"
-            frameBorder="0"
-            allowFullScreen
-            className="rounded-lg"
-          ></iframe> */}
             <TradingChart
               displayCurrency={displayCurrency}
               tokenMint={tokenMint as string}
             />
-            {/* Table Below the Chart */}
             <div className="mt-6">
               <Table>
                 <TableCaption>The latest txs on this token.</TableCaption>
                 <TableHeader>
                   <TableRow>
-                    <TableHead className="">Account</TableHead>
+                    <TableHead>Account</TableHead>
                     <TableHead>Type</TableHead>
                     <TableHead>Time</TableHead>
                     <TableHead>SOL</TableHead>
@@ -246,6 +231,7 @@ export default function Coin() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
+                  {/* Sample rows */}
                   <TableRow>
                     <TableCell className="font-medium">BrSp...ZEYi</TableCell>
                     <TableCell>BUY</TableCell>
@@ -258,15 +244,7 @@ export default function Coin() {
                     <TableCell className="font-medium">BrSp...ZEYi</TableCell>
                     <TableCell>BUY</TableCell>
                     <TableCell>Jan 21 19:19:54</TableCell>
-                    <TableCell>1</TableCell>
-                    <TableCell>CCs</TableCell>
-                    <TableCell className="text-right">$250.00</TableCell>
-                  </TableRow>
-                  <TableRow>
-                    <TableCell className="font-medium">BrSp...ZEYi</TableCell>
-                    <TableCell>SELL</TableCell>
-                    <TableCell>Jan 21 19:19:54</TableCell>
-                    <TableCell>0.8</TableCell>
+                    <TableCell>2.5</TableCell>
                     <TableCell>CCs</TableCell>
                     <TableCell className="text-right">$250.00</TableCell>
                   </TableRow>
@@ -274,41 +252,45 @@ export default function Coin() {
                     <TableCell className="font-medium">BrSp...ZEYi</TableCell>
                     <TableCell>BUY</TableCell>
                     <TableCell>Jan 21 19:19:54</TableCell>
-                    <TableCell>0.1</TableCell>
+                    <TableCell>2.5</TableCell>
                     <TableCell>CCs</TableCell>
                     <TableCell className="text-right">$250.00</TableCell>
                   </TableRow>
                   <TableRow>
                     <TableCell className="font-medium">BrSp...ZEYi</TableCell>
-                    <TableCell>SELL</TableCell>
+                    <TableCell>BUY</TableCell>
                     <TableCell>Jan 21 19:19:54</TableCell>
-                    <TableCell>0.8</TableCell>
+                    <TableCell>2.5</TableCell>
                     <TableCell>CCs</TableCell>
                     <TableCell className="text-right">$250.00</TableCell>
                   </TableRow>
                   <TableRow>
                     <TableCell className="font-medium">BrSp...ZEYi</TableCell>
-                    <TableCell>SELL</TableCell>
+                    <TableCell>BUY</TableCell>
                     <TableCell>Jan 21 19:19:54</TableCell>
-                    <TableCell>0.8</TableCell>
+                    <TableCell>2.5</TableCell>
                     <TableCell>CCs</TableCell>
                     <TableCell className="text-right">$250.00</TableCell>
                   </TableRow>
+                  <TableRow>
+                    <TableCell className="font-medium">BrSp...ZEYi</TableCell>
+                    <TableCell>BUY</TableCell>
+                    <TableCell>Jan 21 19:19:54</TableCell>
+                    <TableCell>2.5</TableCell>
+                    <TableCell>CCs</TableCell>
+                    <TableCell className="text-right">$250.00</TableCell>
+                  </TableRow>
+                  {/* Additional Rows */}
                 </TableBody>
               </Table>
             </div>
           </div>
-
+          {/* Side Panel */}
           <div className="w-full lg:w-1/4 flex flex-col gap-4">
             <div className="h-[530px] overflow-hidden">
               <Tweet id="1882573566727884882" />
             </div>
-
-            <div
-              className="rounded-2xl bg-[#1d1d1b] p-4 mt-9  
-    shadow-[8px_8px_20px_rgba(0,0,0,0.4),8px_8px_20px_rgba(255,255,255,0.08)] 
-    transition-all duration-300 ease-in-out"
-            >
+            <div className="rounded-2xl bg-[#1d1d1b] p-4 mt-9 shadow-md">
               <div className="flex mb-4 border-b border-gray-800">
                 <button
                   className={`pb-2 px-4 text-sm font-medium ${
@@ -331,11 +313,8 @@ export default function Coin() {
                   SELL
                 </button>
               </div>
-
               <div className="mb-4">
-                <label className="text-xs text-gray-400 mb-1 block">
-                  Amount
-                </label>
+                <label className="text-xs text-gray-400 mb-1 block">Amount</label>
                 <div className="bg-[#181816] rounded-lg p-2 flex justify-between items-center">
                   <input
                     type="text"
@@ -350,19 +329,16 @@ export default function Coin() {
                 </div>
                 <div className="text-xs text-gray-500 mt-1">~ 2.34578 SOL</div>
               </div>
-
               {getButtonOptions().length > 0 && (
                 <div className="flex gap-2 mb-4">
                   {getButtonOptions().map((value) => (
                     <button
                       key={value}
-                      className={`flex-1 py-1 rounded-md text-sm bg-[#181816] 
-            ${
-              activeButton === value
-                ? "bg-[#3f51b5] text-white"
-                : "text-gray-400"
-            }
-            hover:bg-[#131311] hover:text-white transition-colors duration-200`}
+                      className={`flex-1 py-1 rounded-md text-sm bg-[#181816] ${
+                        activeButton === value
+                          ? "bg-[#3f51b5] text-white"
+                          : "text-gray-400"
+                      } hover:bg-[#131311] hover:text-white transition-colors`}
                       onClick={() => handleQuickBuyClick(value)}
                     >
                       {activeTab === "BUY" ? `${value} SOL` : `${value}`}
@@ -370,16 +346,14 @@ export default function Coin() {
                   ))}
                 </div>
               )}
-
               <button
-                className={`w-full py-2 rounded-md text-sm font-medium transition-colors duration-200
-      ${
-        activeTab === "BUY"
-          ? "bg-[#4caf50] hover:bg-[#45a049] text-white"
-          : "bg-[#d93941] hover:bg-[#c62828] text-white"
-      }`}
+                className={`w-full py-2 rounded-md text-sm font-medium transition-colors duration-200 ${
+                  activeTab === "BUY"
+                    ? "bg-[#4caf50] hover:bg-[#45a049] text-white"
+                    : "bg-[#d93941] hover:bg-[#c62828] text-white"
+                }`}
               >
-                Place {activeTab.toLowerCase()} order
+                {activeTab === "BUY" ? "Buy MVP" : "Sell MVP"}
               </button>
             </div>
           </div>
