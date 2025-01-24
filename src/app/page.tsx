@@ -112,13 +112,12 @@ const coinItems = [
 
 export default function Home() {
   return (
-    <div className="relative w-full flex items-center justify-center">
-      {/* <Navbar className="top-2" /> */}
+    <div className="relative w-full flex items-center justify-center bg-primary-gradient">
 
       <section className="relative py-12 sm:py-16 lg:py-20">
         <div className="relative px-4 mx-auto max-w-7xl sm:px-6 lg:px-8">
           <div className="max-w-md mx-auto text-center lg:max-w-lg">
-            <p className="my-16 text-lg font-normal text-gray-500 sm:text-xl">
+            <p className="my-16 text-lg font-normal text-gray-300 sm:text-xl">
               Explore a curated collection of tokenized contents launched by
               creators from X (twitter) using AI Agents!
             </p>
@@ -129,7 +128,8 @@ export default function Home() {
               {coinItems.map((item) => (
                 <div
                   key={item.id}
-                  className="overflow-hidden transition-all duration-200 transform text-white bg-gray-800 border border-gray-500 rounded-md w-full sm:w-1/2 md:w-1/3 lg:w-1/4 hover:shadow-lg hover:-translate-y-1 group"
+                  className="overflow-hidden transform text-white bg-[#1d1d1b] border shadow-[8px_8px_20px_rgba(0,0,0,0.4),8px_8px_20px_rgba(255,255,255,0.08)] 
+    transition-all duration-300 ease-in-out rounded-md w-full sm:w-1/2 md:w-1/3 lg:w-1/4 hover:shadow-lg hover:-translate-y-1 group"
                 >
                   <Link
                     href="#"
@@ -147,7 +147,7 @@ export default function Home() {
                   </Link>
                   <div className="p-4">
                     <div className="flex items-center justify-between space-x-6">
-                      <p className="flex-1 text-base font-medium text-white">
+                      <p className="flex-1 text-base  text-white font-bold">
                         <Link href="#" title={item.title}>
                           {item.title}
                         </Link>
@@ -176,12 +176,12 @@ export default function Home() {
                   </div>
                   <div className="p-4 border-t border-gray-200">
                     <div className="flex items-center justify-between">
-                      <p className="text-sm font-medium text-gray-500">
+                      <p className="text-sm font-medium text-gray-200">
                         Market Cap
                       </p>
                       <p className="text-sm font-medium text-white">
                         $44K{" "}
-                        <span className="text-gray-500">
+                        <span className="text-gray-200">
                           (0.00006 USD/token)
                         </span>
                       </p>

@@ -121,7 +121,7 @@ export default function Coin() {
             height={20}
             className="rounded-full"
           />
-          <span>BANA</span>
+          <span className="pr-8">BANA</span>
         </div>
       );
     }
@@ -139,16 +139,16 @@ export default function Coin() {
             height={20}
             className="rounded-full"
           />
-          <span>{selectedToken}</span>
-          <ChevronDown className="w-4 h-4 absolute right-0 top-1/2 -translate-y-1/2 text-gray-400" />
+          <span className="mr-2">{selectedToken}</span>
+          <ChevronDown className="w-4  h-4 absolute right-0 top-1/2 -translate-y-1/2 text-gray-400" />
         </button>
 
         {isDropdownOpen && (
-          <div className="absolute top-full right-0 mt-2 w-32 bg-[#141628] rounded-lg shadow-lg py-1 z-50">
+          <div className="absolute top-full right-0 mt-2 w-32 bg-[#1D1D1B] rounded-lg shadow-lg py-1 z-50">
             {tokenOptions.map((token) => (
               <button
                 key={token.value}
-                className="w-full px-3 py-2 text-left hover:bg-[#1c1f3a] flex items-center gap-2"
+                className="w-full px-3 py-2 text-left hover:bg-[#131311] flex items-center gap-2"
                 onClick={() => handleTokenSelect(token.value)}
               >
                 <Image
@@ -168,53 +168,58 @@ export default function Coin() {
   };
 
   return (
-    <div className="p-4 mt-52">
-      <div className="flex items-center gap-4 mb-4">
-        <img
-          src="/pngwing.com.png"
-          alt="Rounded Avatar"
-          className="w-12 h-12 rounded-full"
-        />
-        <div className="flex flex-col">
-          <p className="font-bold text-lg">BANANAE ($BANA)</p>
-        </div>
-        <div className="flex flex-col">
-          <p className="text-sm text-muted-foreground">by @shivrxj</p>
-        </div>
-        <div className="flex flex-col">
-          <p className="text-sm text-muted-foreground flex items-center">
-            ca: <span id="contract-address">{tokenMint}</span>
-            <FaCopy
-              className="ml-2 cursor-pointer"
-              onClick={() => {
-                const contractAddress = document
-                  .getElementById("contract-address")
-                  ?.textContent?.trim();
-                if (contractAddress) {
-                  handleCopyToClipboard(contractAddress);
-                }
-              }}
-            />
-          </p>
-        </div>
-        <div className="flex flex-col">
-          {" "}
-          <select
-            value={displayCurrency}
-            onChange={(e) =>
-              setDisplayCurrency(e.target.value as "SOL" | "USD")
-            }
-            className="px-4 py-2 bg-[#2a2e39] text-white rounded"
-          >
-            <option value="SOL">SOL</option>
-            <option value="USD">USD</option>
-          </select>
-        </div>
-      </div>
+    <div className="min-h-screen bg-primary-gradient">
+      <div className="p-4 mt-52">
+        <div className="flex items-center gap-4 mb-4">
+          <img
+            src="/pngwing.com.png"
+            alt="Rounded Avatar"
+            className="w-12 h-12 rounded-full"
+          />
+          <div className="flex flex-col">
+            <p className="font-bold text-lg">MVP ($MVP)</p>
+          </div>
+          <div className="flex flex-col">
+            <p className="text-sm text-muted-foreground">by @shivrxj</p>
+          </div>
+          <div className="flex flex-col">
+            <p className="text-sm text-muted-foreground flex items-center">
+              ca: <span id="contract-address">{tokenMint}</span>
+              <FaCopy
+                className="ml-2 cursor-pointer"
+                onClick={() => {
+                  const contractAddress = document
+                    .getElementById("contract-address")
+                    ?.textContent?.trim();
+                  if (contractAddress) {
+                    handleCopyToClipboard(contractAddress);
+                  }
+                }}
+              />
+            </p>
+          </div>
+          <div className="flex ">
+          market cap: <span> $22,500</span>
 
-      <div className="flex flex-col lg:flex-row gap-4">
-        <div className="w-full lg:w-3/4">
-          {/* <iframe
+          </div>
+          <div className="flex flex-col">
+            {" "}
+            <select
+              value={displayCurrency}
+              onChange={(e) =>
+                setDisplayCurrency(e.target.value as "SOL" | "USD")
+              }
+              className="px-4 py-2 bg-[#2a2e39] text-white rounded"
+            >
+              <option value="SOL">SOL</option>
+              <option value="USD">USD</option>
+            </select>
+          </div>
+        </div>
+
+        <div className="flex flex-col lg:flex-row gap-4">
+          <div className="w-full lg:w-3/4">
+            {/* <iframe
             src="https://s.tradingview.com/embed-widget/symbol-overview/?symbol=BINANCE:BTCUSDT&locale=en"
             width="100%"
             height="500"
@@ -222,156 +227,161 @@ export default function Coin() {
             allowFullScreen
             className="rounded-lg"
           ></iframe> */}
-          <TradingChart
-            displayCurrency={displayCurrency}
-            tokenMint={tokenMint as string}
-          />
-          {/* Table Below the Chart */}
-          <div className="mt-6">
-            <Table>
-              <TableCaption>The latest txs on this token.</TableCaption>
-              <TableHeader>
-                <TableRow>
-                  <TableHead className="">Account</TableHead>
-                  <TableHead>Type</TableHead>
-                  <TableHead>Time</TableHead>
-                  <TableHead>SOL</TableHead>
-                  <TableHead>Amount</TableHead>
-                  <TableHead className="text-right">Transaction</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                <TableRow>
-                  <TableCell className="font-medium">BrSp...ZEYi</TableCell>
-                  <TableCell>BUY</TableCell>
-                  <TableCell>Jan 21 19:19:54</TableCell>
-                  <TableCell>2.5</TableCell>
-                  <TableCell>CCs</TableCell>
-                  <TableCell className="text-right">$250.00</TableCell>
-                </TableRow>
-                <TableRow>
-                  <TableCell className="font-medium">BrSp...ZEYi</TableCell>
-                  <TableCell>BUY</TableCell>
-                  <TableCell>Jan 21 19:19:54</TableCell>
-                  <TableCell>1</TableCell>
-                  <TableCell>CCs</TableCell>
-                  <TableCell className="text-right">$250.00</TableCell>
-                </TableRow>
-                <TableRow>
-                  <TableCell className="font-medium">BrSp...ZEYi</TableCell>
-                  <TableCell>SELL</TableCell>
-                  <TableCell>Jan 21 19:19:54</TableCell>
-                  <TableCell>0.8</TableCell>
-                  <TableCell>CCs</TableCell>
-                  <TableCell className="text-right">$250.00</TableCell>
-                </TableRow>
-                <TableRow>
-                  <TableCell className="font-medium">BrSp...ZEYi</TableCell>
-                  <TableCell>BUY</TableCell>
-                  <TableCell>Jan 21 19:19:54</TableCell>
-                  <TableCell>0.1</TableCell>
-                  <TableCell>CCs</TableCell>
-                  <TableCell className="text-right">$250.00</TableCell>
-                </TableRow>
-                <TableRow>
-                  <TableCell className="font-medium">BrSp...ZEYi</TableCell>
-                  <TableCell>SELL</TableCell>
-                  <TableCell>Jan 21 19:19:54</TableCell>
-                  <TableCell>0.8</TableCell>
-                  <TableCell>CCs</TableCell>
-                  <TableCell className="text-right">$250.00</TableCell>
-                </TableRow>
-                <TableRow>
-                  <TableCell className="font-medium">BrSp...ZEYi</TableCell>
-                  <TableCell>SELL</TableCell>
-                  <TableCell>Jan 21 19:19:54</TableCell>
-                  <TableCell>0.8</TableCell>
-                  <TableCell>CCs</TableCell>
-                  <TableCell className="text-right">$250.00</TableCell>
-                </TableRow>
-              </TableBody>
-            </Table>
-          </div>
-        </div>
-
-        <div className="w-full lg:w-1/4 flex flex-col gap-4">
-          <div className="h-[530px] overflow-hidden">
-            <Tweet id="1881588154299232550" />
+            <TradingChart
+              displayCurrency={displayCurrency}
+              tokenMint={tokenMint as string}
+            />
+            {/* Table Below the Chart */}
+            <div className="mt-6">
+              <Table>
+                <TableCaption>The latest txs on this token.</TableCaption>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead className="">Account</TableHead>
+                    <TableHead>Type</TableHead>
+                    <TableHead>Time</TableHead>
+                    <TableHead>SOL</TableHead>
+                    <TableHead>Amount</TableHead>
+                    <TableHead className="text-right">Transaction</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  <TableRow>
+                    <TableCell className="font-medium">BrSp...ZEYi</TableCell>
+                    <TableCell>BUY</TableCell>
+                    <TableCell>Jan 21 19:19:54</TableCell>
+                    <TableCell>2.5</TableCell>
+                    <TableCell>CCs</TableCell>
+                    <TableCell className="text-right">$250.00</TableCell>
+                  </TableRow>
+                  <TableRow>
+                    <TableCell className="font-medium">BrSp...ZEYi</TableCell>
+                    <TableCell>BUY</TableCell>
+                    <TableCell>Jan 21 19:19:54</TableCell>
+                    <TableCell>1</TableCell>
+                    <TableCell>CCs</TableCell>
+                    <TableCell className="text-right">$250.00</TableCell>
+                  </TableRow>
+                  <TableRow>
+                    <TableCell className="font-medium">BrSp...ZEYi</TableCell>
+                    <TableCell>SELL</TableCell>
+                    <TableCell>Jan 21 19:19:54</TableCell>
+                    <TableCell>0.8</TableCell>
+                    <TableCell>CCs</TableCell>
+                    <TableCell className="text-right">$250.00</TableCell>
+                  </TableRow>
+                  <TableRow>
+                    <TableCell className="font-medium">BrSp...ZEYi</TableCell>
+                    <TableCell>BUY</TableCell>
+                    <TableCell>Jan 21 19:19:54</TableCell>
+                    <TableCell>0.1</TableCell>
+                    <TableCell>CCs</TableCell>
+                    <TableCell className="text-right">$250.00</TableCell>
+                  </TableRow>
+                  <TableRow>
+                    <TableCell className="font-medium">BrSp...ZEYi</TableCell>
+                    <TableCell>SELL</TableCell>
+                    <TableCell>Jan 21 19:19:54</TableCell>
+                    <TableCell>0.8</TableCell>
+                    <TableCell>CCs</TableCell>
+                    <TableCell className="text-right">$250.00</TableCell>
+                  </TableRow>
+                  <TableRow>
+                    <TableCell className="font-medium">BrSp...ZEYi</TableCell>
+                    <TableCell>SELL</TableCell>
+                    <TableCell>Jan 21 19:19:54</TableCell>
+                    <TableCell>0.8</TableCell>
+                    <TableCell>CCs</TableCell>
+                    <TableCell className="text-right">$250.00</TableCell>
+                  </TableRow>
+                </TableBody>
+              </Table>
+            </div>
           </div>
 
-          <div className="bg-[#0a0b1e] mt-9 rounded-lg p-4 text-gray-200">
-            <div className="flex mb-4 border-b border-gray-800">
-              <button
-                className={`pb-2 px-4 text-sm font-medium ${
-                  activeTab === "BUY"
-                    ? "text-[#4caf50] border-b-2 border-[#4caf50]"
-                    : "text-gray-500"
-                }`}
-                onClick={() => handleTabChange("BUY")}
-              >
-                BUY
-              </button>
-              <button
-                className={`pb-2 px-4 text-sm font-medium ${
-                  activeTab === "SELL"
-                    ? "text-[#d93941] border-b-2 border-[#d93941]"
-                    : "text-gray-500"
-                }`}
-                onClick={() => handleTabChange("SELL")}
-              >
-                SELL
-              </button>
+          <div className="w-full lg:w-1/4 flex flex-col gap-4">
+            <div className="h-[530px] overflow-hidden">
+              <Tweet id="1882573566727884882" />
             </div>
 
-            <div className="mb-4">
-              <label className="text-xs text-gray-400 mb-1 block">Amount</label>
-              <div className="bg-[#141628] rounded-lg p-2 flex justify-between items-center">
-                <input
-                  type="text"
-                  value={amount}
-                  onChange={(e) => {
-                    setAmount(e.target.value);
-                    setActiveButton(null);
-                  }}
-                  className="bg-transparent text-lg outline-none w-full"
-                />
-                {renderTokenSelector()}
-              </div>
-              <div className="text-xs text-gray-500 mt-1">~ 2.34578 SOL</div>
-            </div>
-
-            {getButtonOptions().length > 0 && (
-              <div className="flex gap-2 mb-4">
-                {getButtonOptions().map((value) => (
-                  <button
-                    key={value}
-                    className={`flex-1 py-1 rounded-md text-sm bg-[#141628] 
-                      ${
-                        activeButton === value
-                          ? "bg-[#3f51b5] text-white"
-                          : "text-gray-400"
-                      }
-                      hover:bg-[#3f51b5] hover:text-white transition-colors duration-200`}
-                    onClick={() => handleQuickBuyClick(value)}
-                    onMouseEnter={() => setActiveButton(value)}
-                    onMouseLeave={() => setActiveButton(null)}
-                  >
-                    {activeTab === "BUY" ? `${value} SOL` : `${value}`}
-                  </button>
-                ))}
-              </div>
-            )}
-
-            <button
-              className={`w-full py-2 rounded-md text-sm font-medium transition-colors duration-200
-                ${
-                  activeTab === "BUY"
-                    ? "bg-[#4caf50] hover:bg-[#45a049] text-white"
-                    : "bg-[#d93941] hover:bg-[#c62828] text-white"
-                }`}
+            <div
+              className="rounded-2xl bg-[#1d1d1b] p-4 mt-9  
+    shadow-[8px_8px_20px_rgba(0,0,0,0.4),8px_8px_20px_rgba(255,255,255,0.08)] 
+    transition-all duration-300 ease-in-out"
             >
-              Place {activeTab.toLowerCase()} order
-            </button>
+              <div className="flex mb-4 border-b border-gray-800">
+                <button
+                  className={`pb-2 px-4 text-sm font-medium ${
+                    activeTab === "BUY"
+                      ? "text-[#4caf50] border-b-2 border-[#4caf50]"
+                      : "text-gray-500"
+                  }`}
+                  onClick={() => handleTabChange("BUY")}
+                >
+                  BUY
+                </button>
+                <button
+                  className={`pb-2 px-4 text-sm font-medium ${
+                    activeTab === "SELL"
+                      ? "text-[#d93941] border-b-2 border-[#d93941]"
+                      : "text-gray-500"
+                  }`}
+                  onClick={() => handleTabChange("SELL")}
+                >
+                  SELL
+                </button>
+              </div>
+
+              <div className="mb-4">
+                <label className="text-xs text-gray-400 mb-1 block">
+                  Amount
+                </label>
+                <div className="bg-[#181816] rounded-lg p-2 flex justify-between items-center">
+                  <input
+                    type="text"
+                    value={amount}
+                    onChange={(e) => {
+                      setAmount(e.target.value);
+                      setActiveButton(null);
+                    }}
+                    className="bg-transparent text-lg outline-none w-full"
+                  />
+                  {renderTokenSelector()}
+                </div>
+                <div className="text-xs text-gray-500 mt-1">~ 2.34578 SOL</div>
+              </div>
+
+              {getButtonOptions().length > 0 && (
+                <div className="flex gap-2 mb-4">
+                  {getButtonOptions().map((value) => (
+                    <button
+                      key={value}
+                      className={`flex-1 py-1 rounded-md text-sm bg-[#181816] 
+            ${
+              activeButton === value
+                ? "bg-[#3f51b5] text-white"
+                : "text-gray-400"
+            }
+            hover:bg-[#131311] hover:text-white transition-colors duration-200`}
+                      onClick={() => handleQuickBuyClick(value)}
+                    >
+                      {activeTab === "BUY" ? `${value} SOL` : `${value}`}
+                    </button>
+                  ))}
+                </div>
+              )}
+
+              <button
+                className={`w-full py-2 rounded-md text-sm font-medium transition-colors duration-200
+      ${
+        activeTab === "BUY"
+          ? "bg-[#4caf50] hover:bg-[#45a049] text-white"
+          : "bg-[#d93941] hover:bg-[#c62828] text-white"
+      }`}
+              >
+                Place {activeTab.toLowerCase()} order
+              </button>
+            </div>
           </div>
         </div>
       </div>

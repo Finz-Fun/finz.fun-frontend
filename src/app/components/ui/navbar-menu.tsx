@@ -180,7 +180,7 @@ export const Navbar = ({ className }: { className?: string }) => {
         </MenuItem>
         <MenuItem setActive={setActive} active={null} item="Home">
           <AlertDialog>
-            <AlertDialogTrigger>How it works</AlertDialogTrigger>
+            <AlertDialogTrigger>FAQ</AlertDialogTrigger>
             <AlertDialogContent>
               <AlertDialogHeader>
                 <AlertDialogTitle>How it works?</AlertDialogTitle>
@@ -220,14 +220,14 @@ export const Navbar = ({ className }: { className?: string }) => {
           </AlertDialog>
         </MenuItem>
         <MenuItem setActive={setActive} active={null} item="Setup Agent">
-          <Link href="/setup">Setup Agent</Link>
+          <Link href="/setup">Setup</Link>
         </MenuItem>
         <MenuItem setActive={setActive} active={null} item="Onramp">
        
              <button onClick={() => isConnected?(open({view: 'OnRampProviders'})):toast({
                 title: "Login Required",
                 description: "Please login before you can onramp ",
-              })}>On Ramp</button>
+              })}>OnRamp</button>
        
      
               
@@ -236,7 +236,7 @@ export const Navbar = ({ className }: { className?: string }) => {
         <MenuItem setActive={setActive} active={null} item="Login" >
           {/* Conditionally render based on the `isConnected` state */}
           {isConnected ? (
-             <button onClick={() => open()}>Your wallet</button>
+             <button onClick={() => open()}>Wallet</button>
           ) : (
             <button onClick={() => open()}>Login</button>
           )}
