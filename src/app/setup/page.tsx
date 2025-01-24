@@ -4,7 +4,7 @@ import { LoginForm } from "../components/ui/login-form"
 
 export default function Coin() {
   return (
-    <div className="flex min-h-svh flex-col items-center justify-center gap-6 bg-slate-700 p-6 md:p-10">
+    <div className="flex min-h-svh flex-col items-center justify-center gap-6 bg-primary-gradient p-6 md:p-10">
       <div className="flex w-full max-w-sm flex-col gap-6">
        
         <LoginForm />
