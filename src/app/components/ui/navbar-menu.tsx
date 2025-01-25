@@ -236,7 +236,8 @@ export const Navbar = ({ className }: { className?: string }) => {
         <MenuItem setActive={setActive} active={null} item="Login" >
           {/* Conditionally render based on the `isConnected` state */}
           {isConnected ? (
-             <button onClick={() => open()}>Wallet</button>
+            //  <button onClick={() => open()}>Wallet</button>
+             <button> <Link href="/profile">Profile</Link></button>
           ) : (
             <button onClick={() => open()}>Login</button>
           )}
