@@ -8,12 +8,11 @@ import {
   CardHeader,
   CardTitle,
 } from "./card";
-import { Input } from "./input";
-import { Label } from "./label";
 import { Switch } from "./switch";
 import { signIn, signOut } from "next-auth/react";
 import { useSession } from "next-auth/react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { toast } from "@/hooks/use-toast";
 
 export function LoginForm({
   className,
@@ -21,8 +20,14 @@ export function LoginForm({
 }: React.ComponentPropsWithoutRef<"div">) {
   const { data: session, status } = useSession();
   const [isLoading, setIsLoading] = useState(false);
+  const [agentEnabled, setAgentEnabled] = useState(false);
 
-  // Handle Twitter sign in
+
+  useEffect(() => {
+    //@ts-ignore
+    setAgentEnabled(session?.user?.agentEnabled || false);
+  }, [session]);
+
   const handleTwitterSignIn = async (e: React.MouseEvent) => {
     e.preventDefault();
     setIsLoading(true);
@@ -38,23 +43,61 @@ export function LoginForm({
     }
   };
 
-  // Handle form submission
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    // Handle your form submission logic here
-  };
-
-  // Handle sign out
   const handleSignOut = async (e: React.MouseEvent) => {
     e.preventDefault();
     setIsLoading(true);
     
     try {
       await signOut({ 
-        callbackUrl: "/" // or wherever you want to redirect after logout
+        callbackUrl: "/"
       });
     } catch (error) {
       console.error("Error signing out:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleSwitchToggle = async (checked: boolean) => {
+    setAgentEnabled(checked);
+  }
+
+  const handleSave = async (checked: boolean) => {
+    //@ts-ignore
+    if (!session?.user?.twitterId) return;
+    
+    setIsLoading(true);
+    try {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URI}/api/creators/agent-status`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          //@ts-ignore
+          twitterId: session.user.twitterId,
+          agentEnabled: checked
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to update agent status');
+      }
+
+      const data = await response.json();
+      
+      toast({
+        title: checked ? "AI Agent Enabled" : "AI Agent Disabled",
+        description: data.message,
+      });
+      setAgentEnabled(checked);
+    } catch (error) {
+      console.error('Error updating agent status:', error);
+      toast({
+        title: "Error",
+        description: "Failed to update agent status",
+        variant: "destructive",
+      });
     } finally {
       setIsLoading(false);
     }
@@ -88,39 +131,43 @@ export function LoginForm({
           )}
         </CardHeader>
         <CardContent>
-          <form onSubmit={handleSubmit}>
-            <div className="grid gap-6">
-              <div className="flex flex-col gap-4">
-                <Button 
-                  type="button"
-                  variant="outline" 
-                  className="w-full"
-                  onClick={handleTwitterSignIn}
-                  disabled={isLoading || status === "authenticated"}
-                >
-                  {isLoading ? "Connecting..." : "Login with X (twitter)"}
-                </Button>
-              </div>
+          <div className="grid gap-6">
+            <div className="flex flex-col gap-4">
+              <Button 
+                variant="outline" 
+                className="w-full"
+                onClick={handleTwitterSignIn}
+                disabled={isLoading || status === "authenticated"}
+              >
+                {isLoading ? "Connecting..." : "Login with X (twitter)"}
+              </Button>
+            </div>
 
+            {status === "authenticated" && (
               <div className="grid gap-6">
                 <div className="grid gap-2">
                   <div className="flex items-center">
                     Turn on your AI Agent
                     <div className="ml-12">
-                      <Switch />
+                      <Switch 
+                      //@ts-ignore
+                        checked={agentEnabled}
+                        onCheckedChange={handleSwitchToggle}
+                        disabled={isLoading || status !== "authenticated"}
+                      />
                     </div>
                   </div>
                 </div>
                 <Button 
-                  type="submit" 
                   className="w-full"
-                  disabled={isLoading || status !== "authenticated"}
+                  disabled={isLoading}
+                  onClick={() => handleSave(agentEnabled)}
                 >
                   Save
                 </Button>
               </div>
-            </div>
-          </form>
+            )}
+          </div>
         </CardContent>
       </Card>
       <div className="text-balance text-center text-xs text-muted-foreground [&_a]:underline [&_a]:underline-offset-4 [&_a]:hover:text-primary">

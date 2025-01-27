@@ -12,6 +12,7 @@ export interface ICreator extends Document {
   following: number;
   tokens: string[];
   walletAddress?: string;
+  agentEnabled: boolean;
 }
 
 const CreatorSchema = new Schema<ICreator>({
@@ -56,6 +57,10 @@ const CreatorSchema = new Schema<ICreator>({
   walletAddress: { 
     type: String 
   },
+  agentEnabled: {
+    type: Boolean,
+    default: false
+  }
 });
 
 // Prevent duplicate model initialization

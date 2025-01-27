@@ -1,6 +1,7 @@
 import { AuthOptions, getServerSession } from "next-auth"
 import TwitterProvider from "next-auth/providers/twitter";
 import Creator from "@/models/Creator";
+import { connectDB } from "@/lib/mongoose";
 
 const authOptions = {
     providers: [
@@ -45,6 +46,7 @@ const authOptions = {
       async session({ session, token }: { session: any, token: any }) {
         if (session.user) {
           try {
+            await connectDB();
             // Fetch creator data from MongoDB
             const creator = await Creator.findOne({ 
               twitterId: token.twitterId 
@@ -56,6 +58,7 @@ const authOptions = {
               session.user.username = creator.username;
               session.user.profileImage = creator.profileImage;
               session.user.name = creator.name;
+              session.user.agentEnabled = creator.agentEnabled;
             }
             
             session.accessToken = token.accessToken;
