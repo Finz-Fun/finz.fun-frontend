@@ -15,6 +15,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { useRouter } from "next/navigation";
 
 const coinItems = [
   {
@@ -76,6 +77,7 @@ const handleCopyToClipboard = (value: string) => {
 };
 
 export default function Profile() {
+  const router = useRouter()
   return (
     <div className="relative w-full min-h-screen bg-primary-gradient flex flex-col sm:flex-row">
       {/* Profile Section (30%) */}
@@ -150,7 +152,11 @@ export default function Profile() {
         </div>
         <button
           className="text-sm font-medium text-red-500 hover:underline mt-8"
-          onClick={() => disconnect()}
+          onClick={() =>{ 
+            disconnect()
+            router.push("/")
+          }
+        }
         >
           Logout
         </button>
