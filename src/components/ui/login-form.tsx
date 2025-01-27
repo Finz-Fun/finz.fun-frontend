@@ -1,4 +1,4 @@
-import { cn } from "@/src/app/lib/utils";
+import { cn } from "@/src/lib/utils";
 import { Button } from "./button";
 import {
   Card,

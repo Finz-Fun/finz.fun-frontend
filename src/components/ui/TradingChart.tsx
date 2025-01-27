@@ -145,7 +145,6 @@ const TradingChart = ({tokenMint, displayCurrency}: {tokenMint: string, displayC
       }
 
       try {
-        // Convert tokenMint string to PublicKey
         const mintPubkey = new PublicKey(tokenMint);
         
         const subscriptionId = await subscribeToPoolUpdates(

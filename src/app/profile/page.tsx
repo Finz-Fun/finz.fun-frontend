@@ -61,8 +61,7 @@ const coinItems = [
   // ... other items
 ];
 
-const { open } = useAppKit();
-const { disconnect } = useDisconnect();
+
 
 const handleCopyToClipboard = (value: string) => {
   navigator.clipboard
@@ -78,6 +77,8 @@ const handleCopyToClipboard = (value: string) => {
 
 export default function Profile() {
   const router = useRouter()
+  const { open } = useAppKit();
+const { disconnect } = useDisconnect();
   return (
     <div className="relative w-full min-h-screen bg-primary-gradient flex flex-col sm:flex-row">
       {/* Profile Section (30%) */}

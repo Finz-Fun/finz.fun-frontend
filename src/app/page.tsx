@@ -7,8 +7,8 @@ import {
   Menu,
   MenuItem,
   ProductItem,
-} from "./components/ui/navbar-menu";
-import { cn } from "./lib/utils";
+} from "../components/ui/navbar-menu";
+import { cn } from "../lib/utils";
 import { FaEthereum } from "react-icons/fa";
 
 const coinItems = [

@@ -4,7 +4,7 @@ import { FaCopy } from "react-icons/fa";
 import { toast } from "@/hooks/use-toast";
 import { ChevronDown } from "lucide-react";
 import { useState, useRef, useEffect, useCallback } from "react";
-import { buttonVariants } from "../components/ui/button";
+import { buttonVariants } from "../../components/ui/button";
 import Image from "next/image";
 import {
   Table,
@@ -14,7 +14,7 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "../components/ui/table";
+} from "../../components/ui/table";
 import dynamic from "next/dynamic";
 import { usePathname, useSearchParams, useRouter } from "next/navigation";
 import {Transaction, Connection} from "@solana/web3.js";
@@ -23,6 +23,7 @@ import { Provider } from "@reown/appkit-adapter-solana/react";
 import { getAssociatedTokenAddress } from "@solana/spl-token";
 import { PublicKey } from "@solana/web3.js";
 import { BN } from "@coral-xyz/anchor";
+import { Suspense } from 'react';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URI || 'http://localhost:3000';
 
@@ -36,7 +37,8 @@ interface TokenOption {
   image: string;
 }
 
-export default function Coin() {
+// Create a separate component for the main content
+function CoinContent() {
   const [activeTab, setActiveTab] = useState("BUY");
   const [amount, setAmount] = useState("0.327543");
   const [selectedToken, setSelectedToken] = useState("SOL");
@@ -99,76 +101,7 @@ export default function Coin() {
       .catch(() => alert("Failed to copy!"));
   };
 
-  const handleTokenSelect = (value: string) => {
-    setSelectedToken(value);
-    setIsDropdownOpen(false);
-    setActiveButton(null);
-  };
-
-  const handleTabChange = (tab: string) => {
-    setActiveTab(tab);
-    setActiveButton(null);
-    if (tab === "SELL") {
-      setSelectedToken("BANA");
-    }
-  };
-
-  const renderTokenSelector = () => {
-    if (activeTab === "SELL") {
-      return (
-        <div className="flex items-center gap-2 text-gray-200 pl-2">
-          <Image
-            src="/pngwing.com.png"
-            alt="Token"
-            width={20}
-            height={20}
-            className="rounded-full"
-          />
-          <span className="pr-8">BANA</span>
-        </div>
-      );
-    }
-
-    return (
-      <div className="relative" ref={dropdownRef}>
-        <button
-          onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-          className="flex items-center gap-2 bg-transparent text-gray-200 pl-2 pr-8 py-1 outline-none cursor-pointer relative"
-        >
-          <Image
-            src="/pngwing.com.png"
-            alt="Token"
-            width={20}
-            height={20}
-            className="rounded-full"
-          />
-          <span className="mr-2">{selectedToken}</span>
-          <ChevronDown className="w-4 h-4 absolute right-0 top-1/2 -translate-y-1/2 text-gray-400" />
-        </button>
-
-        {isDropdownOpen && (
-          <div className="absolute top-full right-0 mt-2 w-32 bg-[#1D1D1B] rounded-lg shadow-lg py-1 z-50">
-            {tokenOptions.map((token) => (
-              <button
-                key={token.value}
-                className="w-full px-3 py-2 text-left hover:bg-[#131311] flex items-center gap-2"
-                onClick={() => handleTokenSelect(token.value)}
-              >
-                <Image
-                  src={token.image}
-                  alt={token.label}
-                  width={20}
-                  height={20}
-                  className="rounded-full"
-                />
-                <span>{token.label}</span>
-              </button>
-            ))}
-          </div>
-        )}
-      </div>
-    );
-  };
+  
 
   return (
     <div className="min-h-screen bg-primary-gradient">
@@ -299,77 +232,20 @@ export default function Coin() {
             <div className="h-[530px] overflow-hidden">
               <Tweet id="1882573566727884882" />
             </div>
-            {/* <div className="rounded-2xl bg-[#1d1d1b] p-4 mt-9 shadow-md">
-              <div className="flex mb-4 border-b border-gray-800">
-                <button
-                  className={`pb-2 px-4 text-sm font-medium ${
-                    activeTab === "BUY"
-                      ? "text-[#4caf50] border-b-2 border-[#4caf50]"
-                      : "text-gray-500"
-                  }`}
-                  onClick={() => handleTabChange("BUY")}
-                >
-                  BUY
-                </button>
-                <button
-                  className={`pb-2 px-4 text-sm font-medium ${
-                    activeTab === "SELL"
-                      ? "text-[#d93941] border-b-2 border-[#d93941]"
-                      : "text-gray-500"
-                  }`}
-                  onClick={() => handleTabChange("SELL")}
-                >
-                  SELL
-                </button>
-              </div>
-              <div className="mb-4">
-                <label className="text-xs text-gray-400 mb-1 block">Amount</label>
-                <div className="bg-[#181816] rounded-lg p-2 flex justify-between items-center">
-                  <input
-                    type="text"
-                    value={amount}
-                    onChange={(e) => {
-                      setAmount(e.target.value);
-                      setActiveButton(null);
-                    }}
-                    className="bg-transparent text-lg outline-none w-full"
-                  />
-                  {renderTokenSelector()}
-                </div>
-                <div className="text-xs text-gray-500 mt-1">~ 2.34578 SOL</div>
-              </div>
-              {getButtonOptions().length > 0 && (
-                <div className="flex gap-2 mb-4">
-                  {getButtonOptions().map((value) => (
-                    <button
-                      key={value}
-                      className={`flex-1 py-1 rounded-md text-sm bg-[#181816] ${
-                        activeButton === value
-                          ? "bg-[#3f51b5] text-white"
-                          : "text-gray-400"
-                      } hover:bg-[#131311] hover:text-white transition-colors`}
-                      onClick={() => handleQuickBuyClick(value)}
-                    >
-                      {activeTab === "BUY" ? `${value} SOL` : `${value}`}
-                    </button>
-                  ))}
-                </div>
-              )}
-              <button
-                className={`w-full py-2 rounded-md text-sm font-medium transition-colors duration-200 ${
-                  activeTab === "BUY"
-                    ? "bg-[#4caf50] hover:bg-[#45a049] text-white"
-                    : "bg-[#d93941] hover:bg-[#c62828] text-white"
-                }`}
-              >
-                {activeTab === "BUY" ? "Buy MVP" : "Sell MVP"}
-              </button>
-            </div> */}
             <TradingPanel tokenMint={tokenMint as string} />
           </div>
         </div>
       </div>
     </div>
+  );
+}
+
+// Main page component
+export default function Coin() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <CoinContent />
+    </Suspense>
   );
 }
 
