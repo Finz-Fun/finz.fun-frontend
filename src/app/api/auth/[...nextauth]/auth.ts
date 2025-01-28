@@ -14,9 +14,9 @@ const authOptions = {
     callbacks: {
       async signIn({ user, account, profile }: { user: any, account: any, profile: any }) {
         try {
-        //   console.log("profile", profile);
-        //   console.log("user", user);
-        //   console.log("account", account);
+          // console.log("profile", profile);
+          // console.log("user", user);
+          // console.log("account", account);
           await Creator.findOneAndUpdate(
             { twitterId: profile.data.id },
             {

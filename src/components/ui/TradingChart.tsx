@@ -41,6 +41,41 @@ const TradingChart = ({tokenMint, displayCurrency, setMcap}: {tokenMint: string,
   const providerRef = useRef<AnchorProvider | null>(null);
   const programRef = useRef<Program<AiAgent> | null>(null);
 
+
+  const SOL_PRICE_CACHE_KEY = 'solana_price_cache';
+  const CACHE_DURATION = 10 * 60 * 1000; 
+
+const fetchSolPrice = async () => {
+  try {
+    const cachedData = localStorage.getItem(SOL_PRICE_CACHE_KEY);
+    if (cachedData) {
+      const { price, timestamp } = JSON.parse(cachedData);
+      const isExpired = Date.now() - timestamp > CACHE_DURATION;
+      
+      if (!isExpired) {
+        solPriceRef.current = price;
+        return price;
+      }
+    }
+    const response = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=solana&vs_currencies=usd');
+    const data = await response.json();
+    const newPrice = data.solana.usd;
+    
+    // Update cache
+    localStorage.setItem(SOL_PRICE_CACHE_KEY, JSON.stringify({
+      price: newPrice,
+      timestamp: Date.now()
+    }));
+
+    solPriceRef.current = newPrice;
+    return newPrice;
+  } catch (error) {
+    console.log('Error fetching SOL price:', error);
+    const cachedData = localStorage.getItem(SOL_PRICE_CACHE_KEY);
+    return cachedData ? JSON.parse(cachedData).price : 1;
+  }
+};
+
   useEffect(() => {
     try {
       const provider = new AnchorProvider(
@@ -71,18 +106,12 @@ const TradingChart = ({tokenMint, displayCurrency, setMcap}: {tokenMint: string,
 
   useEffect(() => {
     const updateSolPrice = async () => {
-      try {
-        const response = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=solana&vs_currencies=usd');
-        const data = await response.json();
-        solPriceRef.current = data.solana.usd;
-        console.log('Updated SOL price:', solPriceRef.current);
-      } catch (error) {
-        console.log('Error updating SOL price:', error);
-      }
+      await fetchSolPrice();
     };
   
     updateSolPrice();
-    const interval = setInterval(updateSolPrice, 300000);
+    
+    const interval = setInterval(updateSolPrice, CACHE_DURATION);
   
     return () => clearInterval(interval);
   }, []);
@@ -112,15 +141,11 @@ const TradingChart = ({tokenMint, displayCurrency, setMcap}: {tokenMint: string,
 
   const fetchHistoricalData = async () => {
     try {
-      const [candlesResponse, solPriceResponse] = await Promise.all([
-        fetch(`${CHART_URL}/candles/${tokenMint}`),
-        fetch('https://api.coingecko.com/api/v3/simple/price?ids=solana&vs_currencies=usd')
-      ]);
-
+      // Fetch candles data immediately without waiting for SOL price
+      const candlesResponse = await fetch(`${CHART_URL}/candles/${tokenMint}`);
       const candlesData: Candle[] = await candlesResponse.json();
-      const solPriceData = await solPriceResponse.json();
-      solPriceRef.current = solPriceData.solana.usd;
 
+      // Update chart with candles data using current SOL price
       if (candlestickSeriesRef.current && Array.isArray(candlesData)) {
         const sortedData = candlesData.sort((a, b) => a.t - b.t);
         const formattedData = sortedData.map(candle => 
@@ -132,8 +157,11 @@ const TradingChart = ({tokenMint, displayCurrency, setMcap}: {tokenMint: string,
           lastCandleRef.current = sortedData[sortedData.length - 1];
         }
       }
+
+      fetchSolPrice();
+
     } catch (error) {
-      console.log('Error fetching data:', error);
+      console.log('Error fetching candles data:', error);
     }
   };
 

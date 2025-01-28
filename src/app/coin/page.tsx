@@ -303,10 +303,13 @@ const TradingPanel = ({ tokenMint, tokenSymbol, isLiquidityActive, reserveToken,
   const [isLoading, setIsLoading] = useState(false);
   const [tokenBalance, setTokenBalance] = useState<number>(0);
   const [estimatedSol, setEstimatedSol] = useState<string>("");
+  const [transaction, setTransaction] = useState<any>(null);
   const { walletProvider } = useAppKitProvider<Provider>('solana');
   const TRADING_BACKEND_URL = process.env.NEXT_PUBLIC_TRADING_BACKEND_URL || 'http://localhost:8080';
 
   const connection = new Connection(process.env.NEXT_PUBLIC_RPC_URL || 'https://api.devnet.solana.com');
+
+  
 
   useEffect(() => {
     const fetchTokenBalance = async () => {
@@ -328,7 +331,7 @@ const TradingPanel = ({ tokenMint, tokenSymbol, isLiquidityActive, reserveToken,
     
 
     fetchTokenBalance();
-  }, [tokenMint,walletProvider?.publicKey]);
+  }, [tokenMint,walletProvider?.publicKey,transaction]);
 
 
   const calculateSolValue = useCallback((tokenAmount: number) => {
@@ -467,6 +470,7 @@ const TradingPanel = ({ tokenMint, tokenSymbol, isLiquidityActive, reserveToken,
       const transaction = Transaction.from(Buffer.from(serializedTransaction, 'base64'));
       const tx = await walletProvider.signAndSendTransaction(transaction);
       console.log("tx", tx);
+      setTransaction(tx);
       toast({
         title: "Transaction successful!",
         description: message,
