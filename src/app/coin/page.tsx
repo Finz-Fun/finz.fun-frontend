@@ -304,7 +304,7 @@ const TradingPanel = ({ tokenMint, tokenSymbol, isLiquidityActive, reserveToken,
   const [tokenBalance, setTokenBalance] = useState<number>(0);
   const [estimatedSol, setEstimatedSol] = useState<string>("");
   const { walletProvider } = useAppKitProvider<Provider>('solana');
- 
+  const TRADING_BACKEND_URL = process.env.NEXT_PUBLIC_TRADING_BACKEND_URL || 'http://localhost:8080';
 
   const connection = new Connection(process.env.NEXT_PUBLIC_RPC_URL || 'https://api.devnet.solana.com');
 
@@ -474,6 +474,9 @@ const TradingPanel = ({ tokenMint, tokenSymbol, isLiquidityActive, reserveToken,
       if (liquidity) {
         const liquidityResponse = await fetch(`${API_URL}/api/${tokenMint}/add-liquidity`);
         const data = await liquidityResponse.json();
+        const res = await fetch(`${TRADING_BACKEND_URL}/tokens/add?tokenMint=${tokenMint}`);
+        const response = await res.json();
+        console.log("response", response);
         toast({
           title: "Liquidity initialized!",
           description: data.message,
