@@ -3,7 +3,7 @@ import { Tweet } from "react-tweet";
 import { FaCopy } from "react-icons/fa";
 import { toast } from "@/hooks/use-toast";
 import { ChevronDown } from "lucide-react";
-import { useState, useRef, useEffect, useCallback } from "react";
+import { useState, useRef, useEffect, useCallback, Dispatch, SetStateAction } from "react";
 import { buttonVariants } from "../../components/ui/button";
 import Image from "next/image";
 import {
@@ -50,6 +50,13 @@ function CoinContent() {
   const searchParams = useSearchParams();
   const tokenMint = searchParams.get("tokenMint");
   const [displayCurrency, setDisplayCurrency] = useState<"SOL" | "USD">("SOL");
+  const [reserveToken, setReserveToken] = useState<number>(0);
+  const [tokenName, setTokenName] = useState<string>("");
+  const [tokenSymbol, setTokenSymbol] = useState<string>("");
+  const [isLiquidityActive, setIsLiquidityActive] = useState<boolean>(false);
+  const [imageUrl, setImageUrl] = useState<string>("");
+  const [creatorName, setCreatorName] = useState<string>("");
+  const [mcap, setMcap] = useState<string>("25");
 
   const tokenOptions: TokenOption[] = [
     { value: "SOL", label: "SOL", image: "/pngwing.com.png" },
@@ -57,6 +64,26 @@ function CoinContent() {
     { value: "BTC", label: "BTC", image: "/pngwing.com.png" },
     { value: "ETH", label: "ETH", image: "/pngwing.com.png" },
   ];
+
+
+  useEffect(() => {
+    const fetchPoolData = async () => {
+      try {
+        const response = await fetch(`${API_URL}/api/${tokenMint}/pool-data`);
+        const data = await response.json();
+        setReserveToken(parseInt(new BN(data.reserveToken.toString())));
+        setTokenSymbol(data.tokenSymbol);
+        setTokenName(data.tokenName);
+        setImageUrl(data.imageUrl);
+        setIsLiquidityActive(data.isLiquidityActive || false);
+        setCreatorName(data.creatorName);
+        setMcap(data.mcap);
+      } catch (error) {
+        console.log('Error fetching pool data:', error);
+      }
+    };
+    fetchPoolData();
+  }, [tokenMint]);
 
   const getButtonOptions = () => {
     if (activeTab === "SELL") {
@@ -113,10 +140,10 @@ function CoinContent() {
             className="w-12 h-12 rounded-full"
           />
           <div className="flex flex-col">
-            <p className="font-bold text-lg">MVP ($MVP)</p>
+            <p className="font-bold text-lg">{tokenName} (${tokenSymbol})</p>
           </div>
           <div className="flex flex-col">
-            <p className="text-sm text-muted-foreground">by @shivrxj</p>
+            <p className="text-sm text-muted-foreground">by @{creatorName}</p>
           </div>
           <div className="flex flex-col">
             <p className="text-sm text-muted-foreground flex items-center">
@@ -135,7 +162,7 @@ function CoinContent() {
             </p>
           </div>
           <div className="flex flex-col">
-            <p className="text-sm">market cap: <span>$22,500</span></p>
+            {displayCurrency === "USD" ? <p className="text-sm">market cap: <span>${mcap}</span></p> : <p className="text-sm">market cap: <span>{mcap} </span></p>}
           </div>
           <div className="flex flex-col">
             <select
@@ -158,6 +185,7 @@ function CoinContent() {
             <TradingChart
               displayCurrency={displayCurrency}
               tokenMint={tokenMint as string}
+              setMcap={setMcap}
             />
             <div className="mt-6">
               <Table>
@@ -229,10 +257,19 @@ function CoinContent() {
           </div>
           {/* Side Panel */}
           <div className="w-full lg:w-1/4 flex flex-col gap-4">
-            <div className="h-[530px] overflow-hidden">
-              <Tweet id="1882573566727884882" />
+            <div className="h-[530px] overflow-hidden relative">
+               {imageUrl && (
+                   <Image 
+                       src={imageUrl} 
+                       alt="Token Image"
+                       fill
+                       sizes="(max-width: 768px) 100vw, 33vw"
+                       className="object-contain object-center"
+                       priority
+                   />
+               )}
             </div>
-            <TradingPanel tokenMint={tokenMint as string} />
+            <TradingPanel tokenMint={tokenMint as string} tokenSymbol={tokenSymbol} isLiquidityActive={isLiquidityActive} reserveToken={reserveToken} setIsLiquidityActive={setIsLiquidityActive} />
           </div>
         </div>
       </div>
@@ -252,9 +289,13 @@ export default function Coin() {
 
 interface TradingPanelProps {
   tokenMint: string;
+  tokenSymbol: string;
+  isLiquidityActive: boolean;
+  reserveToken: number;
+  setIsLiquidityActive: Dispatch<SetStateAction<boolean>>
 }
 
-const TradingPanel = ({ tokenMint }: TradingPanelProps) => {
+const TradingPanel = ({ tokenMint, tokenSymbol, isLiquidityActive, reserveToken, setIsLiquidityActive }: TradingPanelProps) => {
   const [activeTab, setActiveTab] = useState("BUY");
   const [amount, setAmount] = useState("");
   const [tokenAmount, setTokenAmount] = useState<number>(0);
@@ -263,8 +304,7 @@ const TradingPanel = ({ tokenMint }: TradingPanelProps) => {
   const [tokenBalance, setTokenBalance] = useState<number>(0);
   const [estimatedSol, setEstimatedSol] = useState<string>("");
   const { walletProvider } = useAppKitProvider<Provider>('solana');
-  const [reserveToken, setReserveToken] = useState<number>(0);
-  const [tokenName, setTokenName] = useState<string>("");
+ 
 
   const connection = new Connection(process.env.NEXT_PUBLIC_RPC_URL || 'https://api.devnet.solana.com');
 
@@ -285,21 +325,9 @@ const TradingPanel = ({ tokenMint }: TradingPanelProps) => {
         setTokenBalance(0);
       }
     };
-    const fetchPool = async () => {
-      try {
-        const response = await fetch(`${API_URL}/api/${tokenMint}/pool-data`);
-        const data = await response.json();
-        console.log("reserveToken", data.reserveToken);
-        console.log("sorted", parseInt(new BN(data.reserveToken.toString())));
-        setReserveToken(parseInt(new BN(data.reserveToken.toString())));
-        setTokenName(data.tokenName);
-      } catch (error) {
-        console.log('Error fetching pool data:', error);
-      }
-    };
+    
 
     fetchTokenBalance();
-    fetchPool();
   }, [tokenMint,walletProvider?.publicKey]);
 
 
@@ -378,7 +406,7 @@ const TradingPanel = ({ tokenMint }: TradingPanelProps) => {
 
   const renderTokenSelector = () => {
     return <span className="text-gray-400">
-        {activeTab === "SELL" ? tokenName : "SOL"}
+        {activeTab === "SELL" ? tokenSymbol : "SOL"}
     </span>;
 };
 
@@ -387,42 +415,82 @@ const TradingPanel = ({ tokenMint }: TradingPanelProps) => {
 
     setIsLoading(true);
     try {
-      const endpoint = activeTab === "BUY" 
-        ? `${API_URL}/api/${tokenMint}/buy?amount=${amount}`
-        : `${API_URL}/api/${tokenMint}/sell?amount=${tokenAmount}`;
+      let transactionResponse;
+      let liquidity = false;
+      if (activeTab === "BUY" && !isLiquidityActive) {
+        // Show confirmation dialog for liquidity fee
+        const confirmLiquidity = window.confirm(
+          `This is the first buy for this token. 0.02 SOL will be charged from the buy amount for liquidity initialization. Do you want to continue?`
+        );
 
-      const response = await fetch(endpoint, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          account: walletProvider.publicKey?.toBase58(),
-        }),
-      });
+        if (!confirmLiquidity) {
+          setIsLoading(false);
+          return;
+        }
 
-      if (!response.ok) {
+        // Call the liquidity initialization endpoint
+        transactionResponse = await fetch(`${API_URL}/create-add-liquidity-transaction`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            mintAddress: tokenMint,
+            solAmount: amount,
+            account: walletProvider.publicKey?.toBase58(),
+          }),
+        });
+        liquidity = true;
+      } else {
+        // Normal buy/sell flow
+        const endpoint = activeTab === "BUY" 
+          ? `${API_URL}/api/${tokenMint}/buy?amount=${amount}`
+          : `${API_URL}/api/${tokenMint}/sell?amount=${tokenAmount}`;
+
+        transactionResponse = await fetch(endpoint, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            account: walletProvider.publicKey?.toBase58(),
+          }),
+        });
+      }
+
+      if (!transactionResponse.ok) {
         throw new Error('Failed to create transaction');
       }
 
-      const { transaction: serializedTransaction, message } = await response.json();
+      const { transaction: serializedTransaction, message } = await transactionResponse.json();
       
       const transaction = Transaction.from(Buffer.from(serializedTransaction, 'base64'));
       const tx = await walletProvider.signAndSendTransaction(transaction);
+      console.log("tx", tx);
       toast({
         title: "Transaction successful!",
         description: message,
       });
+      if (liquidity) {
+        const liquidityResponse = await fetch(`${API_URL}/api/${tokenMint}/add-liquidity`);
+        const data = await liquidityResponse.json();
+        toast({
+          title: "Liquidity initialized!",
+          description: data.message,
+        });
+        setIsLiquidityActive(true);
+      }
+
     } catch (error:any) {
       console.log('Transaction error:', error);
       toast({
         title: "Transaction failed",
-        description: error ? error : 'Unknown error',
+        description: error.message || 'Unknown error',
       });
     } finally {
       setIsLoading(false);
     }
-  }, [walletProvider?.publicKey, amount, activeTab, tokenMint]);
+  }, [walletProvider?.publicKey, amount, activeTab, tokenMint, isLiquidityActive, tokenAmount]);
 
   return (
     <div className="rounded-2xl bg-[#1d1d1b] p-4 mt-9 shadow-md">

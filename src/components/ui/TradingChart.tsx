@@ -1,5 +1,5 @@
 import { createChart, IChartApi, ISeriesApi, Time } from 'lightweight-charts';
-import { useEffect, useRef, useState } from 'react';
+import { Dispatch, SetStateAction, useEffect, useRef, useState } from 'react';
 import { Candle, PriceUpdate } from '../../types/trading';
 import { connection, PROGRAM_ID } from '../../config';
 import { Program, AnchorProvider } from '@coral-xyz/anchor';
@@ -30,7 +30,7 @@ const getPriceFormatter = (currency: 'SOL' | 'USD') => {
   };
 };
 
-const TradingChart = ({tokenMint, displayCurrency}: {tokenMint: string, displayCurrency:"SOL"|"USD"}) => {
+const TradingChart = ({tokenMint, displayCurrency, setMcap}: {tokenMint: string, displayCurrency:"SOL"|"USD", setMcap: Dispatch<SetStateAction<string>>}) => {
   const chartContainerRef = useRef<HTMLDivElement>(null);
   const chartRef = useRef<IChartApi | null>(null);
   const candlestickSeriesRef = useRef<ISeriesApi<"Candlestick"> | null>(null);
@@ -148,10 +148,16 @@ const TradingChart = ({tokenMint, displayCurrency}: {tokenMint: string, displayC
         const mintPubkey = new PublicKey(tokenMint);
         
         const subscriptionId = await subscribeToPoolUpdates(
-          programRef.current, // Pass the program instead of provider
-          mintPubkey.toString(), // Pass the tokenMint as string
+          programRef.current,
+          mintPubkey.toString(),
           (poolData) => {
             setIsConnected(true);
+
+            if (displayCurrency === "USD") {
+              setMcap((poolData.price*solPriceRef.current).toFixed(2));
+            } else {
+              setMcap(poolData.price.toFixed(4).toString());
+            }
             
             if (!candlestickSeriesRef.current) return;
 
