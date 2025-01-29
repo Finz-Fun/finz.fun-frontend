@@ -1,9 +1,20 @@
 import { createChart, IChartApi, ISeriesApi, Time } from 'lightweight-charts';
-import { useEffect, useRef, useState } from 'react';
-import { io, Socket } from 'socket.io-client';
+import { Dispatch, SetStateAction, useEffect, useRef, useState } from 'react';
 import { Candle, PriceUpdate } from '../../types/trading';
+import { connection, PROGRAM_ID } from '../../config';
+import { Program, AnchorProvider } from '@coral-xyz/anchor';
+import { AiAgent, IDL } from '../../idl/ai_agent';
+import { subscribeToPoolUpdates, unsubscribeFromPool } from '../../utils/pool';
+import { Keypair, PublicKey } from '@solana/web3.js';
 
-const WS_URL = process.env.NEXT_PUBLIC_WS_URI || 'http://localhost:8080';
+const CHART_URL = process.env.NEXT_PUBLIC_CHART_URI || 'http://localhost:8080';
+const DUMMY_PRIVATE_KEY = process.env.NEXT_PUBLIC_DUMMY_PRIVATE_KEY as string
+
+const dummyWallet = {
+  publicKey: Keypair.fromSecretKey(new Uint8Array(JSON.parse(DUMMY_PRIVATE_KEY))).publicKey,
+  signTransaction: async (tx: any) => tx,
+  signAllTransactions: async (txs: any) => txs,
+};
 
 
 const getPriceFormatter = (currency: 'SOL' | 'USD') => {
@@ -18,37 +29,88 @@ const getPriceFormatter = (currency: 'SOL' | 'USD') => {
   };
 };
 
-const TradingChart = ({tokenMint, displayCurrency}: {tokenMint: string, displayCurrency:"SOL"|"USD"}) => {
+const TradingChart = ({tokenMint, displayCurrency, setMcap}: {tokenMint: string, displayCurrency:"SOL"|"USD", setMcap: Dispatch<SetStateAction<string>>}) => {
   const chartContainerRef = useRef<HTMLDivElement>(null);
   const chartRef = useRef<IChartApi | null>(null);
   const candlestickSeriesRef = useRef<ISeriesApi<"Candlestick"> | null>(null);
-  const socketRef = useRef<Socket | null>(null);
+  const subscriptionIdRef = useRef<number | null>(null);
   const [isConnected, setIsConnected] = useState(false);
   const lastCandleRef = useRef<Candle | null>(null);
   const solPriceRef = useRef<number>(0);
+  const providerRef = useRef<AnchorProvider | null>(null);
+  const programRef = useRef<Program<AiAgent> | null>(null);
 
 
+  const SOL_PRICE_CACHE_KEY = 'solana_price_cache';
+  const CACHE_DURATION = 10 * 60 * 1000; 
+
+const fetchSolPrice = async () => {
+  try {
+    const cachedData = localStorage.getItem(SOL_PRICE_CACHE_KEY);
+    if (cachedData) {
+      const { price, timestamp } = JSON.parse(cachedData);
+      const isExpired = Date.now() - timestamp > CACHE_DURATION;
+      
+      if (!isExpired) {
+        solPriceRef.current = price;
+        return price;
+      }
+    }
+    const response = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=solana&vs_currencies=usd');
+    const data = await response.json();
+    const newPrice = data.solana.usd;
+    
+    // Update cache
+    localStorage.setItem(SOL_PRICE_CACHE_KEY, JSON.stringify({
+      price: newPrice,
+      timestamp: Date.now()
+    }));
+
+    solPriceRef.current = newPrice;
+    return newPrice;
+  } catch (error) {
+    console.log('Error fetching SOL price:', error);
+    const cachedData = localStorage.getItem(SOL_PRICE_CACHE_KEY);
+    return cachedData ? JSON.parse(cachedData).price : 1;
+  }
+};
 
   useEffect(() => {
-    const cleanup = initializeSocket();
+    try {
+      const provider = new AnchorProvider(
+        connection,
+        dummyWallet,
+        AnchorProvider.defaultOptions()
+      );
+      providerRef.current = provider;
+      
+      const program = new Program<AiAgent>(
+        IDL,
+        PROGRAM_ID,
+        provider
+      );
+      programRef.current = program;
+      
+      console.log('Program initialized with wallet:', dummyWallet.publicKey.toString());
+    } catch (error) {
+      console.log('Error initializing program:', error);
+    }
+  }, []);
+
+  useEffect(() => {
+    console.log("tokenMint", tokenMint)
+    const cleanup = initializePoolSubscription();
     return () => cleanup();
   }, [displayCurrency]);
 
   useEffect(() => {
     const updateSolPrice = async () => {
-      console.log(WS_URL)
-      try {
-        const response = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=solana&vs_currencies=usd');
-        const data = await response.json();
-        solPriceRef.current = data.solana.usd;
-        console.log('Updated SOL price:', solPriceRef.current);
-      } catch (error) {
-        console.error('Error updating SOL price:', error);
-      }
+      await fetchSolPrice();
     };
   
     updateSolPrice();
-    const interval = setInterval(updateSolPrice, 300000);
+    
+    const interval = setInterval(updateSolPrice, CACHE_DURATION);
   
     return () => clearInterval(interval);
   }, []);
@@ -64,105 +126,116 @@ const TradingChart = ({tokenMint, displayCurrency}: {tokenMint: string, displayC
     };
   }
 
-
-const updateChartData = () => {
-  if (!candlestickSeriesRef.current || !lastCandleRef.current) return;
-  
-  // Update price format based on currency
-  candlestickSeriesRef.current.applyOptions({
-    priceFormat: getPriceFormatter(displayCurrency),
-  });
-
-  // Refresh all candles with new currency
-  fetchHistoricalData();
-};
-
-const fetchHistoricalData = async () => {
-  try {
-    const [candlesResponse, solPriceResponse] = await Promise.all([
-      fetch(`${WS_URL}/candles/${tokenMint}`),
-      fetch('https://api.coingecko.com/api/v3/simple/price?ids=solana&vs_currencies=usd')
-    ]);
-
-    const candlesData: Candle[] = await candlesResponse.json();
-    const solPriceData = await solPriceResponse.json();
-    solPriceRef.current = solPriceData.solana.usd;
-
-    if (candlestickSeriesRef.current && Array.isArray(candlesData)) {
-      const sortedData = candlesData.sort((a, b) => a.t - b.t);
-      const formattedData = sortedData.map(candle => 
-        formatCandleData(candle, solPriceRef.current)
-      );
-      candlestickSeriesRef.current.setData(formattedData);
-      
-      if (sortedData.length > 0) {
-        lastCandleRef.current = sortedData[sortedData.length - 1];
-      }
-    }
-  } catch (error) {
-    console.error('Error fetching data:', error);
-  }
-};
-
-  const initializeSocket = () => {
-    const socket = io(WS_URL, {
-      transports: ['websocket']
-    });
-    socketRef.current = socket;
-
-    socket.on('connect', () => {
-      setIsConnected(true);
-      console.log('Socket Connected');
-      socket.emit('subscribe', tokenMint);
-    });
-
-    socket.on('disconnect', () => {
-      setIsConnected(false);
-      console.log('Socket Disconnected');
-    });
-
-    socket.on('price', (update: PriceUpdate) => {
-      if (!candlestickSeriesRef.current) return;
+  const updateChartData = () => {
+    if (!candlestickSeriesRef.current || !lastCandleRef.current) return;
     
-      const currentTimestamp = Math.floor(update.ts / 30) * 30;
-      
-      // Always store original SOL price in the candle
-      if (!lastCandleRef.current) {
-        const newCandle: Candle = {
-          t: currentTimestamp,
-          o: update.p,
-          h: update.p,
-          l: update.p,
-          c: update.p
-        };
-        lastCandleRef.current = newCandle;
-        candlestickSeriesRef.current.update(formatCandleData(newCandle));
+
+    candlestickSeriesRef.current.applyOptions({
+      priceFormat: getPriceFormatter(displayCurrency),
+    });
+
+    fetchHistoricalData();
+  };
+
+  const fetchHistoricalData = async () => {
+    try {
+      const candlesResponse = await fetch(`${CHART_URL}/candles/${tokenMint}`);
+      const candlesData: Candle[] = await candlesResponse.json();
+
+      if (candlestickSeriesRef.current && Array.isArray(candlesData)) {
+        const sortedData = candlesData.sort((a, b) => a.t - b.t);
+        const formattedData = sortedData.map(candle => 
+          formatCandleData(candle, solPriceRef.current)
+        );
+        candlestickSeriesRef.current.setData(formattedData);
+        
+        if (sortedData.length > 0) {
+          lastCandleRef.current = sortedData[sortedData.length - 1];
+        }
+      }
+
+      fetchSolPrice();
+
+    } catch (error) {
+      console.log('Error fetching candles data:', error);
+    }
+  };
+
+  const initializePoolSubscription = () => {
+    const subscribe = async () => {
+      if (!programRef.current) {
+        console.log('Program not initialized');
         return;
       }
-    
-      const lastCandle = lastCandleRef.current;
-    
-      if (currentTimestamp > lastCandle.t) {
-        const newCandle: Candle = {
-          t: currentTimestamp,
-          o: update.p,
-          h: update.p,
-          l: update.p,
-          c: update.p
-        };
-        lastCandleRef.current = newCandle;
-        candlestickSeriesRef.current.update(formatCandleData(newCandle));
-      } else {
-        lastCandle.h = Math.max(lastCandle.h, update.p);
-        lastCandle.l = Math.min(lastCandle.l, update.p);
-        lastCandle.c = update.p;
-        candlestickSeriesRef.current.update(formatCandleData(lastCandle));
+
+      try {
+        const mintPubkey = new PublicKey(tokenMint);
+        
+        const subscriptionId = await subscribeToPoolUpdates(
+          programRef.current,
+          mintPubkey.toString(),
+          (poolData) => {
+            setIsConnected(true);
+
+            if (displayCurrency === "USD") {
+              setMcap((poolData.price*solPriceRef.current).toFixed(2));
+            } else {
+              setMcap(poolData.price.toFixed(4).toString());
+            }
+            
+            if (!candlestickSeriesRef.current) return;
+
+            const currentTimestamp = Math.floor(Date.now() / 1000 / 30) * 30;
+            const price = poolData.price;
+            
+            if (!lastCandleRef.current) {
+              const newCandle: Candle = {
+                t: currentTimestamp,
+                o: price,
+                h: price,
+                l: price,
+                c: price
+              };
+              lastCandleRef.current = newCandle;
+              candlestickSeriesRef.current.update(formatCandleData(newCandle));
+              return;
+            }
+
+            const lastCandle = lastCandleRef.current;
+
+            if (currentTimestamp > lastCandle.t) {
+              const newCandle: Candle = {
+                t: currentTimestamp,
+                o: price,
+                h: price,
+                l: price,
+                c: price
+              };
+              lastCandleRef.current = newCandle;
+              candlestickSeriesRef.current.update(formatCandleData(newCandle));
+            } else {
+              lastCandle.h = Math.max(lastCandle.h, price);
+              lastCandle.l = Math.min(lastCandle.l, price);
+              lastCandle.c = price;
+              candlestickSeriesRef.current.update(formatCandleData(lastCandle));
+            }
+          }
+        );
+
+        subscriptionIdRef.current = subscriptionId;
+      } catch (error) {
+        console.log('Error subscribing to pool:', error);
+        setIsConnected(false);
       }
-    });
+    };
+
+    subscribe();
 
     return () => {
-      socket.emit('unsubscribe', tokenMint);
-      socket.disconnect();
+      if (subscriptionIdRef.current !== null) {
+        unsubscribeFromPool(connection, subscriptionIdRef.current);
+        setIsConnected(false);
+      }
     };
   };
 
@@ -211,7 +284,6 @@ const fetchHistoricalData = async () => {
           const hours = date.getHours().toString().padStart(2, '0');
           const minutes = date.getMinutes().toString().padStart(2, '0');
           
-          // Show different formats based on the time
           const now = new Date();
           const isToday = date.toDateString() === now.toDateString();
           const isThisYear = date.getFullYear() === now.getFullYear();
@@ -301,11 +373,9 @@ const fetchHistoricalData = async () => {
       />
       {/* <div className="mt-4 flex gap-4">
         <div 
-          className={`px-4 py-2 rounded ${
-            isConnected ? 'bg-green-600' : 'bg-red-600'
-          } text-white`}
+          className={`px-4 py-2 rounded ${isConnected ? 'bg-green-600' : 'bg-red-600'} text-white`}
         >
-          {isConnected ? 'Connected' : 'Disconnected'}
+          {isConnected ? 'Connected to Blockchain' : 'Disconnected'}
         </div>
         <button
           onClick={fetchHistoricalData}
