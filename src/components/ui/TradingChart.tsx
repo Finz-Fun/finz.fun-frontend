@@ -10,7 +10,6 @@ import { Keypair, PublicKey } from '@solana/web3.js';
 const CHART_URL = process.env.NEXT_PUBLIC_CHART_URI || 'http://localhost:8080';
 const DUMMY_PRIVATE_KEY = process.env.NEXT_PUBLIC_DUMMY_PRIVATE_KEY as string
 
-// Create a custom wallet class that implements the Wallet interface
 const dummyWallet = {
   publicKey: Keypair.fromSecretKey(new Uint8Array(JSON.parse(DUMMY_PRIVATE_KEY))).publicKey,
   signTransaction: async (tx: any) => tx,
@@ -130,22 +129,19 @@ const fetchSolPrice = async () => {
   const updateChartData = () => {
     if (!candlestickSeriesRef.current || !lastCandleRef.current) return;
     
-    // Update price format based on currency
+
     candlestickSeriesRef.current.applyOptions({
       priceFormat: getPriceFormatter(displayCurrency),
     });
 
-    // Refresh all candles with new currency
     fetchHistoricalData();
   };
 
   const fetchHistoricalData = async () => {
     try {
-      // Fetch candles data immediately without waiting for SOL price
       const candlesResponse = await fetch(`${CHART_URL}/candles/${tokenMint}`);
       const candlesData: Candle[] = await candlesResponse.json();
 
-      // Update chart with candles data using current SOL price
       if (candlestickSeriesRef.current && Array.isArray(candlesData)) {
         const sortedData = candlesData.sort((a, b) => a.t - b.t);
         const formattedData = sortedData.map(candle => 
@@ -288,7 +284,6 @@ const fetchSolPrice = async () => {
           const hours = date.getHours().toString().padStart(2, '0');
           const minutes = date.getMinutes().toString().padStart(2, '0');
           
-          // Show different formats based on the time
           const now = new Date();
           const isToday = date.toDateString() === now.toDateString();
           const isThisYear = date.getFullYear() === now.getFullYear();

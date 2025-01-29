@@ -24,8 +24,16 @@ import { getAssociatedTokenAddress } from "@solana/spl-token";
 import { PublicKey } from "@solana/web3.js";
 import { BN } from "@coral-xyz/anchor";
 import { Suspense } from 'react';
+import { subscribeToPoolUpdates, unsubscribeFromPool } from "@/utils/pool";
+import { connection } from "@/config";
+import { Keypair } from "@solana/web3.js";
+import { AnchorProvider, Program } from "@coral-xyz/anchor";
+import { AiAgent, IDL } from "@/idl/ai_agent";
+import { PROGRAM_ID } from "@/config";
+import { subscribeToPoolTransactions, unsubscribeFromPool as poolTransactionsUnsubscribe } from "@/utils/pool";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URI || 'http://localhost:3000';
+const DUMMY_PRIVATE_KEY = process.env.NEXT_PUBLIC_DUMMY_PRIVATE_KEY as string
 
 const TradingChart = dynamic(() => import("../../components/ui/TradingChart"), {
   ssr: false,
@@ -37,7 +45,14 @@ interface TokenOption {
   image: string;
 }
 
-// Create a separate component for the main content
+interface OnChainTransaction {
+  type: 'BUY' | 'SELL';
+  timestamp: number;
+  solAmount: number;
+  walletAddress: string;
+  price: number;
+}
+
 function CoinContent() {
   const [activeTab, setActiveTab] = useState("BUY");
   const [amount, setAmount] = useState("0.327543");
@@ -57,6 +72,11 @@ function CoinContent() {
   const [imageUrl, setImageUrl] = useState<string>("");
   const [creatorName, setCreatorName] = useState<string>("");
   const [mcap, setMcap] = useState<string>("25");
+  const [transactions, setTransactions] = useState<OnChainTransaction[]>([]);
+  const lastPriceRef = useRef<number | null>(null);
+  const subscriptionIdRef = useRef<number | null>(null);
+  const programRef = useRef<Program<AiAgent> | null>(null);
+  const { walletProvider } = useAppKitProvider<Provider>('solana');
 
   const tokenOptions: TokenOption[] = [
     { value: "SOL", label: "SOL", image: "/pngwing.com.png" },
@@ -64,7 +84,6 @@ function CoinContent() {
     { value: "BTC", label: "BTC", image: "/pngwing.com.png" },
     { value: "ETH", label: "ETH", image: "/pngwing.com.png" },
   ];
-
 
   useEffect(() => {
     const fetchPoolData = async () => {
@@ -84,22 +103,68 @@ function CoinContent() {
     };
     fetchPoolData();
   }, [tokenMint]);
-
-  const getButtonOptions = () => {
-    if (activeTab === "SELL") {
-      return ["25%", "50%", "75%", "100%"];
-    }
-    if (activeTab === "BUY" && selectedToken === "SOL") {
-      return ["0.5", "1", "2", "5"];
-    }
-    return [];
-  };
-
   
-  const handleQuickBuyClick = (value: string) => {
-    setActiveButton(value);
-    setAmount(value);
-  };
+  useEffect(() => {
+    try {
+      const dummyWallet = {
+        publicKey: Keypair.fromSecretKey(new Uint8Array(JSON.parse(DUMMY_PRIVATE_KEY))).publicKey,
+        signTransaction: async (tx: any) => tx,
+        signAllTransactions: async (txs: any) => txs,
+      };
+
+      const provider = new AnchorProvider(
+        connection,
+        dummyWallet,
+        AnchorProvider.defaultOptions()
+      );
+      
+      const program = new Program<AiAgent>(
+        IDL,
+        PROGRAM_ID,
+        provider
+      );
+      programRef.current = program;
+      
+      console.log('Program initialized with wallet:', dummyWallet.publicKey.toString());
+    } catch (error) {
+      console.log('Error initializing program:', error);
+    }
+  }, []);
+
+  useEffect(() => {
+    const subscribeToOnChainUpdates = async () => {
+      if (!programRef.current || !tokenMint) return;
+
+      // Cleanup any existing subscription first
+      if (subscriptionIdRef.current !== null) {
+        unsubscribeFromPool(connection, subscriptionIdRef.current);
+        subscriptionIdRef.current = null;
+      }
+
+      try {
+        const subscriptionId = await subscribeToPoolTransactions(
+          programRef.current,
+          tokenMint.toString(),
+          (transaction) => {
+            setTransactions(prev => [transaction, ...prev].slice(0, 50));
+          }
+        );
+
+        subscriptionIdRef.current = subscriptionId;
+      } catch (error) {
+        console.log('Error subscribing to pool updates:', error);
+      }
+    };
+
+    subscribeToOnChainUpdates();
+
+    return () => {
+      if (subscriptionIdRef.current !== null) {
+        unsubscribeFromPool(connection, subscriptionIdRef.current);
+        subscriptionIdRef.current = null;
+      }
+    };
+  }, [tokenMint]);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -128,7 +193,13 @@ function CoinContent() {
       .catch(() => alert("Failed to copy!"));
   };
 
-  
+  const formatWalletAddress = (address: string) => {
+    return `${address.slice(0, 4)}...${address.slice(-4)}`;
+  };
+
+  const getTransactionColor = (type: string) => {
+    return type === 'BUY' ? 'text-green-500' : 'text-red-500';
+  };
 
   return (
     <div className="min-h-screen bg-primary-gradient">
@@ -192,65 +263,34 @@ function CoinContent() {
                 <TableCaption>The latest txs on this token.</TableCaption>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Account</TableHead>
                     <TableHead>Type</TableHead>
+                    <TableHead>Amount (SOL)</TableHead>
+                    <TableHead>Wallet</TableHead>
                     <TableHead>Time</TableHead>
-                    <TableHead>SOL</TableHead>
-                    <TableHead>Amount</TableHead>
-                    <TableHead className="text-right">Transaction</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {/* Sample rows */}
-                  <TableRow>
-                    <TableCell className="font-medium">BrSp...ZEYi</TableCell>
-                    <TableCell>BUY</TableCell>
-                    <TableCell>Jan 21 19:19:54</TableCell>
-                    <TableCell>2.5</TableCell>
-                    <TableCell>CCs</TableCell>
-                    <TableCell className="text-right">$250.00</TableCell>
-                  </TableRow>
-                  <TableRow>
-                    <TableCell className="font-medium">BrSp...ZEYi</TableCell>
-                    <TableCell>BUY</TableCell>
-                    <TableCell>Jan 21 19:19:54</TableCell>
-                    <TableCell>2.5</TableCell>
-                    <TableCell>CCs</TableCell>
-                    <TableCell className="text-right">$250.00</TableCell>
-                  </TableRow>
-                  <TableRow>
-                    <TableCell className="font-medium">BrSp...ZEYi</TableCell>
-                    <TableCell>BUY</TableCell>
-                    <TableCell>Jan 21 19:19:54</TableCell>
-                    <TableCell>2.5</TableCell>
-                    <TableCell>CCs</TableCell>
-                    <TableCell className="text-right">$250.00</TableCell>
-                  </TableRow>
-                  <TableRow>
-                    <TableCell className="font-medium">BrSp...ZEYi</TableCell>
-                    <TableCell>BUY</TableCell>
-                    <TableCell>Jan 21 19:19:54</TableCell>
-                    <TableCell>2.5</TableCell>
-                    <TableCell>CCs</TableCell>
-                    <TableCell className="text-right">$250.00</TableCell>
-                  </TableRow>
-                  <TableRow>
-                    <TableCell className="font-medium">BrSp...ZEYi</TableCell>
-                    <TableCell>BUY</TableCell>
-                    <TableCell>Jan 21 19:19:54</TableCell>
-                    <TableCell>2.5</TableCell>
-                    <TableCell>CCs</TableCell>
-                    <TableCell className="text-right">$250.00</TableCell>
-                  </TableRow>
-                  <TableRow>
-                    <TableCell className="font-medium">BrSp...ZEYi</TableCell>
-                    <TableCell>BUY</TableCell>
-                    <TableCell>Jan 21 19:19:54</TableCell>
-                    <TableCell>2.5</TableCell>
-                    <TableCell>CCs</TableCell>
-                    <TableCell className="text-right">$250.00</TableCell>
-                  </TableRow>
-                  {/* Additional Rows */}
+                  {transactions.map((tx, index) => (
+                    <TableRow key={index}>
+                      <TableCell className={getTransactionColor(tx.type)}>
+                        {tx.type}
+                      </TableCell>
+                      <TableCell>◎{tx.solAmount.toFixed(4)}</TableCell>
+                      <TableCell className="font-medium">
+                        {formatWalletAddress(tx.walletAddress)}
+                      </TableCell>
+                      <TableCell>
+                        {new Date(tx.timestamp * 1000).toLocaleTimeString()}
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                  {transactions.length === 0 && (
+                    <TableRow>
+                      <TableCell colSpan={4} className="text-center text-gray-500">
+                        No transactions yet
+                      </TableCell>
+                    </TableRow>
+                  )}
                 </TableBody>
               </Table>
             </div>
