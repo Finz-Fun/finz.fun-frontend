@@ -461,7 +461,6 @@ const TradingPanel = ({ tokenMint, tokenSymbol, isLiquidityActive, reserveToken,
       let transactionResponse;
       let liquidity = false;
       if (activeTab === "BUY" && !isLiquidityActive) {
-        // Show confirmation dialog for liquidity fee
         const confirmLiquidity = window.confirm(
           `This is the first buy for this token. 0.02 SOL will be charged from the buy amount for liquidity initialization. Do you want to continue?`
         );
@@ -470,8 +469,6 @@ const TradingPanel = ({ tokenMint, tokenSymbol, isLiquidityActive, reserveToken,
           setIsLoading(false);
           return;
         }
-
-        // Call the liquidity initialization endpoint
         transactionResponse = await fetch(`${API_URL}/create-add-liquidity-transaction`, {
           method: 'POST',
           headers: {
@@ -485,7 +482,6 @@ const TradingPanel = ({ tokenMint, tokenSymbol, isLiquidityActive, reserveToken,
         });
         liquidity = true;
       } else {
-        // Normal buy/sell flow
         const endpoint = activeTab === "BUY" 
           ? `${API_URL}/api/${tokenMint}/buy?amount=${amount}`
           : `${API_URL}/api/${tokenMint}/sell?amount=${tokenAmount}`;
@@ -509,34 +505,24 @@ const TradingPanel = ({ tokenMint, tokenSymbol, isLiquidityActive, reserveToken,
       
       const transaction = Transaction.from(Buffer.from(serializedTransaction, 'base64'));
       
-      // Get fresh blockhash and set it
-      const { blockhash, lastValidBlockHeight } = await connection.getLatestBlockhash();
-      transaction.recentBlockhash = blockhash;
       
-      // Send transaction
-      const signature = await walletProvider.sendTransaction(transaction, connection);
+      const signature = await walletProvider.sendTransaction(transaction, connection, {
+        skipPreflight: false,
+        maxRetries: 5,
+        preflightCommitment: 'confirmed'
+      });
 
-      // Best practice: Show pending notification
       toast({
         title: "Transaction sent",
         description: "Confirming transaction...",
       });
 
-      // Wait for confirmation with timeout
-      const status = await connection.confirmTransaction(
-        {
-          signature,
-          blockhash,
-          lastValidBlockHeight,
-        },
-        'confirmed'
-      );
+      const confirmation = await connection.confirmTransaction(signature, 'confirmed');
 
-      if (status.value.err) {
+      if (confirmation.value.err) {
         throw new Error('Transaction failed');
       }
 
-      // Success handling
       console.log("Transaction confirmed:", signature);
       setTransaction(signature);
       toast({
@@ -544,7 +530,6 @@ const TradingPanel = ({ tokenMint, tokenSymbol, isLiquidityActive, reserveToken,
         description: "Your transaction has been confirmed",
       });
 
-      // Handle liquidity updates if needed
       if (liquidity) {
         await Promise.all([
           fetch(`${API_URL}/api/${tokenMint}/add-liquidity`),
@@ -561,11 +546,9 @@ const TradingPanel = ({ tokenMint, tokenSymbol, isLiquidityActive, reserveToken,
     } catch (error: any) {
       console.error('Transaction error:', error);
       
-      // Detailed error handling
       let errorMessage = 'Transaction failed';
       if (error.logs) {
         console.error('Transaction logs:', error.logs);
-        // Often the last log contains the most relevant error
         errorMessage = error.logs[error.logs.length - 1] || errorMessage;
       }
 
