@@ -508,31 +508,71 @@ const TradingPanel = ({ tokenMint, tokenSymbol, isLiquidityActive, reserveToken,
       const { transaction: serializedTransaction, message } = await transactionResponse.json();
       
       const transaction = Transaction.from(Buffer.from(serializedTransaction, 'base64'));
-      const tx = await walletProvider.signAndSendTransaction(transaction);
-      console.log("tx", tx);
-      setTransaction(tx);
+      
+      // Get fresh blockhash and set it
+      const { blockhash, lastValidBlockHeight } = await connection.getLatestBlockhash();
+      transaction.recentBlockhash = blockhash;
+      
+      // Send transaction
+      const signature = await walletProvider.sendTransaction(transaction, connection);
+
+      // Best practice: Show pending notification
       toast({
-        title: "Transaction successful!",
-        description: message,
+        title: "Transaction sent",
+        description: "Confirming transaction...",
       });
-      if (liquidity) {
-        const liquidityResponse = await fetch(`${API_URL}/api/${tokenMint}/add-liquidity`);
-        const data = await liquidityResponse.json();
-        const res = await fetch(`${TRADING_BACKEND_URL}/tokens/add?tokenMint=${tokenMint}`);
-        const response = await res.json();
-        console.log("response", response);
-        toast({
-          title: "Liquidity initialized!",
-          description: data.message,
-        });
-        setIsLiquidityActive(true);
+
+      // Wait for confirmation with timeout
+      const status = await connection.confirmTransaction(
+        {
+          signature,
+          blockhash,
+          lastValidBlockHeight,
+        },
+        'confirmed'
+      );
+
+      if (status.value.err) {
+        throw new Error('Transaction failed');
       }
 
-    } catch (error:any) {
-      console.log('Transaction error:', error);
+      // Success handling
+      console.log("Transaction confirmed:", signature);
+      setTransaction(signature);
       toast({
-        title: "Transaction failed",
-        description: error.message || 'Unknown error',
+        title: "Transaction successful!",
+        description: "Your transaction has been confirmed",
+      });
+
+      // Handle liquidity updates if needed
+      if (liquidity) {
+        await Promise.all([
+          fetch(`${API_URL}/api/${tokenMint}/add-liquidity`),
+          fetch(`${TRADING_BACKEND_URL}/tokens/add?tokenMint=${tokenMint}`)
+        ]);
+        
+        setIsLiquidityActive(true);
+        toast({
+          title: "Liquidity initialized!",
+          description: "Pool is now active for trading",
+        });
+      }
+
+    } catch (error: any) {
+      console.error('Transaction error:', error);
+      
+      // Detailed error handling
+      let errorMessage = 'Transaction failed';
+      if (error.logs) {
+        console.error('Transaction logs:', error.logs);
+        // Often the last log contains the most relevant error
+        errorMessage = error.logs[error.logs.length - 1] || errorMessage;
+      }
+
+      toast({
+        title: "Error",
+        description: errorMessage,
+        variant: "destructive",
       });
     } finally {
       setIsLoading(false);
