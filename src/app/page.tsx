@@ -14,104 +14,104 @@ import { useRouter } from "next/navigation";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URI || 'http://localhost:3000';
 
-const coinItems = [
-  {
-    id: 1,
-    title: "Auraui Art 1",
-    imageUrl: "/image.png",
-    priceEth: 3.4,
-    priceUsd: 6652,
-    avatarUrl: "/pngwing.com.png",
-  },
-  {
-    id: 2,
-    title: "Auraui Art 2",
-    imageUrl: "/image.png",
-    priceEth: 1.4,
-    priceUsd: 2352,
-    avatarUrl: "https://ibb.co/sb9q9K7",
-  },
-  {
-    id: 3,
-    title: "Auraui Art 3",
-    imageUrl: "/image.png",
-    priceEth: 2.4,
-    priceUsd: 4552,
-    avatarUrl: "https://ibb.co/sb9q9K7",
-  },
-  {
-    id: 4,
-    title: "Auraui Art 3",
-    imageUrl: "/image.png",
-    priceEth: 2.4,
-    priceUsd: 4552,
-    avatarUrl: "https://www.auraui.com/web3Images/nft/nft1.png",
-  },
-  {
-    id: 5,
-    title: "Auraui Art 3",
-    imageUrl: "/image.png",
-    priceEth: 2.4,
-    priceUsd: 4552,
-    avatarUrl: "https://www.auraui.com/web3Images/nft/nft1.png",
-  },
-  {
-    id: 6,
-    title: "Auraui Art 3",
-    imageUrl: "/image.png",
-    priceEth: 2.4,
-    priceUsd: 4552,
-    avatarUrl: "https://www.auraui.com/web3Images/nft/nft1.png",
-  },
-  {
-    id: 7,
-    title: "Auraui Art 3",
-    imageUrl: "/image.png",
-    priceEth: 2.4,
-    priceUsd: 4552,
-    avatarUrl: "https://www.auraui.com/web3Images/nft/nft1.png",
-  },
-  {
-    id: 8,
-    title: "Auraui Art 3",
-    imageUrl: "/image.png",
-    priceEth: 2.4,
-    priceUsd: 4552,
-    avatarUrl: "https://www.auraui.com/web3Images/nft/nft1.png",
-  },
-  {
-    id: 9,
-    title: "Auraui Art 3",
-    imageUrl: "/image.png",
-    priceEth: 2.4,
-    priceUsd: 4552,
-    avatarUrl: "https://www.auraui.com/web3Images/nft/nft1.png",
-  },
-  {
-    id: 10,
-    title: "Auraui Art 3",
-    imageUrl: "/image.png",
-    priceEth: 2.4,
-    priceUsd: 4552,
-    avatarUrl: "https://www.auraui.com/web3Images/nft/nft1.png",
-  },
-  {
-    id: 11,
-    title: "Auraui Art 3",
-    imageUrl: "/image.png",
-    priceEth: 2.4,
-    priceUsd: 4552,
-    avatarUrl: "https://www.auraui.com/web3Images/nft/nft1.png",
-  },
-  // {
-  //   id: 12,
-  //   title: "Auraui Art 3",
-  //   imageUrl: "/image.png",
-  //   priceEth: 2.4,
-  //   priceUsd: 4552,
-  //   avatarUrl: "https://www.auraui.com/web3Images/nft/nft1.png",
-  // },
-];
+// const coinItems = [
+//   {
+//     id: 1,
+//     title: "Auraui Art 1",
+//     imageUrl: "/image.png",
+//     priceEth: 3.4,
+//     priceUsd: 6652,
+//     avatarUrl: "/pngwing.com.png",
+//   },
+//   {
+//     id: 2,
+//     title: "Auraui Art 2",
+//     imageUrl: "/image.png",
+//     priceEth: 1.4,
+//     priceUsd: 2352,
+//     avatarUrl: "https://ibb.co/sb9q9K7",
+//   },
+//   {
+//     id: 3,
+//     title: "Auraui Art 3",
+//     imageUrl: "/image.png",
+//     priceEth: 2.4,
+//     priceUsd: 4552,
+//     avatarUrl: "https://ibb.co/sb9q9K7",
+//   },
+//   {
+//     id: 4,
+//     title: "Auraui Art 3",
+//     imageUrl: "/image.png",
+//     priceEth: 2.4,
+//     priceUsd: 4552,
+//     avatarUrl: "https://www.auraui.com/web3Images/nft/nft1.png",
+//   },
+//   {
+//     id: 5,
+//     title: "Auraui Art 3",
+//     imageUrl: "/image.png",
+//     priceEth: 2.4,
+//     priceUsd: 4552,
+//     avatarUrl: "https://www.auraui.com/web3Images/nft/nft1.png",
+//   },
+//   {
+//     id: 6,
+//     title: "Auraui Art 3",
+//     imageUrl: "/image.png",
+//     priceEth: 2.4,
+//     priceUsd: 4552,
+//     avatarUrl: "https://www.auraui.com/web3Images/nft/nft1.png",
+//   },
+//   {
+//     id: 7,
+//     title: "Auraui Art 3",
+//     imageUrl: "/image.png",
+//     priceEth: 2.4,
+//     priceUsd: 4552,
+//     avatarUrl: "https://www.auraui.com/web3Images/nft/nft1.png",
+//   },
+//   {
+//     id: 8,
+//     title: "Auraui Art 3",
+//     imageUrl: "/image.png",
+//     priceEth: 2.4,
+//     priceUsd: 4552,
+//     avatarUrl: "https://www.auraui.com/web3Images/nft/nft1.png",
+//   },
+//   {
+//     id: 9,
+//     title: "Auraui Art 3",
+//     imageUrl: "/image.png",
+//     priceEth: 2.4,
+//     priceUsd: 4552,
+//     avatarUrl: "https://www.auraui.com/web3Images/nft/nft1.png",
+//   },
+//   {
+//     id: 10,
+//     title: "Auraui Art 3",
+//     imageUrl: "/image.png",
+//     priceEth: 2.4,
+//     priceUsd: 4552,
+//     avatarUrl: "https://www.auraui.com/web3Images/nft/nft1.png",
+//   },
+//   {
+//     id: 11,
+//     title: "Auraui Art 3",
+//     imageUrl: "/image.png",
+//     priceEth: 2.4,
+//     priceUsd: 4552,
+//     avatarUrl: "https://www.auraui.com/web3Images/nft/nft1.png",
+//   },
+//   // {
+//   //   id: 12,
+//   //   title: "Auraui Art 3",
+//   //   imageUrl: "/image.png",
+//   //   priceEth: 2.4,
+//   //   priceUsd: 4552,
+//   //   avatarUrl: "https://www.auraui.com/web3Images/nft/nft1.png",
+//   // },
+// ];
 
 interface Token {
   title: string;
@@ -144,6 +144,9 @@ export default function Home() {
             <p className="text-lg font-normal text-gray-300 sm:text-xl">
               Explore a curated collection of tokenized contents
               launched by creators from X (twitter) using AI Agents!
+              <br />
+              <br />
+              <p className="text-md font-light text-gray-300 sm:text-lg">Charts powered by <a className="text-blue-500" href="https://in.tradingview.com" target="_blank" rel="noopener noreferrer">Tradingview</a></p>
             </p>
           </div>
 
