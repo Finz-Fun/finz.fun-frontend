@@ -1,5 +1,5 @@
 "use client";
-import React from "react";
+import React, { useEffect } from "react";
 import { motion } from "framer-motion";
 import Link from "next/link";
 import Image from "next/image";
@@ -164,11 +164,21 @@ export const HoveredLink = ({ children, ...rest }: any) => {
   );
 };
 
-// Add the Navbar component here
 export const Navbar = ({ className }: { className?: string }) => {
   const [active, setActive] = React.useState<string | null>(null);
   const { address, isConnected, caipAddress, status, embeddedWalletInfo } = useAppKitAccount()
   const { toast } = useToast()
+  useEffect( () => {
+    const updateWallet = async () => {
+      if (isConnected) {
+        await fetch('/api/updatewallet', {
+          method: 'POST',
+          body: JSON.stringify({ walletAddress: address })
+        });
+      }
+    };
+    updateWallet();
+  }, [isConnected, address]);
 
   return (
     <div

@@ -61,7 +61,6 @@ export default function Profile() {
       if (walletProvider?.publicKey) {
         try {
           const balance = await connection.getBalance(walletProvider.publicKey);
-          // Convert lamports to SOL (1 SOL = 1,000,000,000 lamports)
           setBalance(balance / 1000000000);
         } catch (error) {
           console.error("Error fetching balance:", error);
@@ -71,10 +70,9 @@ export default function Profile() {
     };
 
     getBalance();
-    // Set up an interval to refresh the balance periodically
-    const intervalId = setInterval(getBalance, 30000); // Updates every 30 seconds
+    const intervalId = setInterval(getBalance, 30000);
 
-    return () => clearInterval(intervalId); // Cleanup interval on unmount
+    return () => clearInterval(intervalId);
   }, [walletProvider?.publicKey, connection]);
   useEffect(() => {
     const fetchTokens = async () => {
@@ -102,7 +100,7 @@ export default function Profile() {
           />
           <div className="flex items-center space-x-4 mt-4">
             <Image
-              src="/pngwing.com.png" // Replace with your image URL
+              src="/pngwing.com.png"
               alt="Profile Icon"
               width={40}
               height={40}

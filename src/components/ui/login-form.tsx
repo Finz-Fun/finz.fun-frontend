@@ -13,6 +13,7 @@ import { signIn, signOut } from "next-auth/react";
 import { useSession } from "next-auth/react";
 import { useEffect, useState } from "react";
 import { toast } from "@/hooks/use-toast";
+import { useAppKitAccount } from '@reown/appkit/react'
 
 export function LoginForm({
   className,
@@ -21,20 +22,41 @@ export function LoginForm({
   const { data: session, status } = useSession();
   const [isLoading, setIsLoading] = useState(false);
   const [agentEnabled, setAgentEnabled] = useState(false);
-
+  const { address } = useAppKitAccount();
+  console.log("address", address);
 
   useEffect(() => {
     //@ts-ignore
     setAgentEnabled(session?.user?.agentEnabled || false);
   }, [session]);
 
+  useEffect(() => {
+    const updateWallet = async () => {
+      if (session && address) {
+        try {
+          await fetch('/api/creator', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ walletAddress: address }),
+          });
+        } catch (error) {
+          console.error('Failed to update wallet:', error);
+        }
+      }
+    };
+
+    updateWallet();
+  }, [session, address]);
+
   const handleTwitterSignIn = async (e: React.MouseEvent) => {
     e.preventDefault();
     setIsLoading(true);
     
     try {
-      await signIn("twitter", { 
-        callbackUrl: "/",
+      await signIn("twitter", {
+        callbackUrl: "/setup",
       });
     } catch (error) {
       console.error("Error signing in:", error);
