@@ -462,7 +462,7 @@ const TradingPanel = ({ tokenMint, tokenSymbol, isLiquidityActive, reserveToken,
       let liquidity = false;
       if (activeTab === "BUY" && !isLiquidityActive) {
         const confirmLiquidity = window.confirm(
-          `This is the first buy for this token. 0.02 SOL will be charged from the buy amount for liquidity initialization. Do you want to continue?`
+          `This is the first buy for this token. An additional 0.02 SOL will be charged on top of the buy amount for liquidity initialization. Do you want to continue?`
         );
 
         if (!confirmLiquidity) {
