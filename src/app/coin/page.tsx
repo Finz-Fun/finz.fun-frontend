@@ -205,11 +205,11 @@ function CoinContent() {
     <div className="min-h-screen bg-primary-gradient">
       <div className="p-4 mt-52">
         <div className="flex flex-wrap items-center gap-4 mb-4">
-          <img
+          {/* <img
             src="/pngwing.com.png"
             alt="Rounded Avatar"
             className="w-12 h-12 rounded-full"
-          />
+          /> */}
           <div className="flex flex-col">
             <p className="font-bold text-lg">{tokenName} (${tokenSymbol})</p>
           </div>
@@ -275,7 +275,7 @@ function CoinContent() {
                       <TableCell className={getTransactionColor(tx.type)}>
                         {tx.type}
                       </TableCell>
-                      <TableCell>◎{tx.solAmount.toFixed(4)}</TableCell>
+                      <TableCell>{tx.solAmount.toFixed(4)}</TableCell>
                       <TableCell className="font-medium">
                         {formatWalletAddress(tx.walletAddress)}
                       </TableCell>
@@ -428,7 +428,7 @@ const TradingPanel = ({ tokenMint, tokenSymbol, isLiquidityActive, reserveToken,
       setAmount((tokenAmount/1_000_000_000).toFixed(2).toString());
       setTokenAmount(tokenAmount);
       setEstimatedSol(calculateSolValue(tokenAmount));
-    } else {
+    } else{
       setAmount(value);
       setTokenAmount(Number(value));
       setEstimatedSol("");
@@ -441,6 +441,7 @@ const TradingPanel = ({ tokenMint, tokenSymbol, isLiquidityActive, reserveToken,
     setActiveButton(null);
     
     if (activeTab === "SELL" && !isNaN(Number(newAmount))) {
+      setTokenAmount(Number(newAmount)*1_000_000_000);
       setEstimatedSol(calculateSolValue(Number(newAmount)*1_000_000_000));
     } else {
       setEstimatedSol("");
@@ -638,8 +639,8 @@ const TradingPanel = ({ tokenMint, tokenSymbol, isLiquidityActive, reserveToken,
           : !walletProvider?.publicKey 
           ? "Connect Wallet" 
           : activeTab === "BUY" 
-          ? "Buy MVP" 
-          : "Sell MVP"}
+          ? `Buy ${tokenSymbol}`
+          : `Sell ${tokenSymbol}`}
       </button>
     </div>
   );
