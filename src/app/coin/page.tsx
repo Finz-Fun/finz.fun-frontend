@@ -1,10 +1,10 @@
 "use client";
-import { Tweet } from "react-tweet";
+// import { Tweet } from "react-tweet";
 import { FaCopy } from "react-icons/fa";
 import { toast } from "@/hooks/use-toast";
-import { ChevronDown } from "lucide-react";
+// import { ChevronDown } from "lucide-react";
 import { useState, useRef, useEffect, useCallback, Dispatch, SetStateAction } from "react";
-import { buttonVariants } from "../../components/ui/button";
+// import { buttonVariants } from "../../components/ui/button";
 import Image from "next/image";
 import {
   Table,
@@ -16,7 +16,7 @@ import {
   TableRow,
 } from "../../components/ui/table";
 import dynamic from "next/dynamic";
-import { usePathname, useSearchParams, useRouter } from "next/navigation";
+import {  useSearchParams, useRouter } from "next/navigation";
 import {Transaction, Connection} from "@solana/web3.js";
 import {  useAppKitProvider } from "@reown/appkit/react";
 import { Provider } from "@reown/appkit-adapter-solana/react";
@@ -54,11 +54,11 @@ interface OnChainTransaction {
 }
 
 function CoinContent() {
-  const [activeTab, setActiveTab] = useState("BUY");
-  const [amount, setAmount] = useState("0.327543");
-  const [selectedToken, setSelectedToken] = useState("SOL");
+  // const [activeTab, setActiveTab] = useState("BUY");
+  // const [amount, setAmount] = useState("0.327543");
+  // const [selectedToken, setSelectedToken] = useState("SOL");
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-  const [activeButton, setActiveButton] = useState<string | null>(null);
+  // const [activeButton, setActiveButton] = useState<string | null>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   const router = useRouter();
@@ -73,10 +73,10 @@ function CoinContent() {
   const [creatorName, setCreatorName] = useState<string>("");
   const [mcap, setMcap] = useState<string>("25");
   const [transactions, setTransactions] = useState<OnChainTransaction[]>([]);
-  const lastPriceRef = useRef<number | null>(null);
+  // const lastPriceRef = useRef<number | null>(null);
   const subscriptionIdRef = useRef<number | null>(null);
   const programRef = useRef<Program<AiAgent> | null>(null);
-  const { walletProvider } = useAppKitProvider<Provider>('solana');
+  // const { walletProvider } = useAppKitProvider<Provider>('solana');
 
   const tokenOptions: TokenOption[] = [
     { value: "SOL", label: "SOL", image: "/pngwing.com.png" },
@@ -346,6 +346,7 @@ const TradingPanel = ({ tokenMint, tokenSymbol, isLiquidityActive, reserveToken,
   const [transaction, setTransaction] = useState<any>(null);
   const { walletProvider } = useAppKitProvider<Provider>('solana');
   const TRADING_BACKEND_URL = process.env.NEXT_PUBLIC_TRADING_BACKEND_URL || 'http://localhost:8080';
+  console.log(TRADING_BACKEND_URL)
 
   const connection = new Connection(process.env.NEXT_PUBLIC_RPC_URL || 'https://api.devnet.solana.com');
 
@@ -462,14 +463,10 @@ const TradingPanel = ({ tokenMint, tokenSymbol, isLiquidityActive, reserveToken,
       let transactionResponse;
       let liquidity = false;
       if (activeTab === "BUY" && !isLiquidityActive) {
-        const confirmLiquidity = window.confirm(
-          `This is the first buy for this token. An additional 0.02 SOL will be charged on top of the buy amount for liquidity initialization. Do you want to continue?`
-        );
+        toast({
+          title: "Adding Liquidity",
+        });
 
-        if (!confirmLiquidity) {
-          setIsLoading(false);
-          return;
-        }
         transactionResponse = await fetch(`${API_URL}/create-add-liquidity-transaction`, {
           method: 'POST',
           headers: {

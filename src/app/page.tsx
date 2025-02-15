@@ -206,9 +206,9 @@ export default function Home() {
                         Market Cap
                       </p>
                       <p className="text-sm font-medium text-white">
-                        ${item.priceSol.toFixed(2)} {" "}
+                        {item.priceSol.toFixed(2)} {"SOL "}
                         <span className="text-gray-200">
-                          (${item.priceUsd.toFixed(2)} USD)
+                          (${item.priceUsd.toFixed(2)})
                         </span>
                       </p>
                     </div>

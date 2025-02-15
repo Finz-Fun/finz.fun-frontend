@@ -143,10 +143,13 @@ export const subscribeToPoolTransactions = async (
                 const accountKeys = txDetails.transaction.message.getAccountKeys();
                 const transactionType: 'BUY' | 'SELL' = solDifference.gt(new BN(0)) ? 'BUY' : 'SELL';
                 
+                const rawSolAmount = Math.abs(parseInt(solDifference.toString())) / 1e9;
+                const solAmount = rawSolAmount * (101/100);
+                
                 const transaction = {
                   type: transactionType,
                   timestamp: Date.now() / 1000,
-                  solAmount: Math.abs(parseInt(solDifference.toString())) / 1e9,
+                  solAmount,
                   walletAddress: accountKeys.get(0)?.toString() || 'Unknown', 
                   price: 0, 
                 };
