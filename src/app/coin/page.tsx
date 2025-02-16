@@ -30,7 +30,7 @@ import { Keypair } from "@solana/web3.js";
 import { AnchorProvider, Program } from "@coral-xyz/anchor";
 import { AiAgent, IDL } from "@/idl/ai_agent";
 import { PROGRAM_ID } from "@/config";
-import { subscribeToPoolTransactions, unsubscribeFromPool as poolTransactionsUnsubscribe } from "@/utils/pool";
+import { subscribeToPoolTransactions, unsubscribeFromPool as poolTransactionsUnsubscribe, fetchHistoricalTransactions } from "@/utils/pool";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URI || 'http://localhost:3000';
 const DUMMY_PRIVATE_KEY = process.env.NEXT_PUBLIC_DUMMY_PRIVATE_KEY as string
@@ -132,16 +132,21 @@ function CoinContent() {
   }, []);
 
   useEffect(() => {
-    const subscribeToOnChainUpdates = async () => {
+    const loadHistoricalAndSubscribe = async () => {
       if (!programRef.current || !tokenMint) return;
 
-      // Cleanup any existing subscription first
-      if (subscriptionIdRef.current !== null) {
-        unsubscribeFromPool(connection, subscriptionIdRef.current);
-        subscriptionIdRef.current = null;
-      }
-
       try {
+        const historical = await fetchHistoricalTransactions(
+          programRef.current,
+          tokenMint.toString()
+        );
+        console.log(historical)
+        setTransactions(historical as any);
+        if (subscriptionIdRef.current !== null) {
+          unsubscribeFromPool(connection, subscriptionIdRef.current);
+          subscriptionIdRef.current = null;
+        }
+
         const subscriptionId = await subscribeToPoolTransactions(
           programRef.current,
           tokenMint.toString(),
@@ -152,18 +157,11 @@ function CoinContent() {
 
         subscriptionIdRef.current = subscriptionId;
       } catch (error) {
-        console.log('Error subscribing to pool updates:', error);
+        console.log('Error setting up transactions:', error);
       }
     };
 
-    subscribeToOnChainUpdates();
-
-    return () => {
-      if (subscriptionIdRef.current !== null) {
-        unsubscribeFromPool(connection, subscriptionIdRef.current);
-        subscriptionIdRef.current = null;
-      }
-    };
+    loadHistoricalAndSubscribe();
   }, [tokenMint]);
 
   useEffect(() => {
@@ -202,7 +200,7 @@ function CoinContent() {
   };
 
   return (
-    <div className="min-h-screen bg-primary-gradient">
+    <div className="min-h-screen bg-primary-gradient lg:overflow-y-hidden">
       <div className="p-4 mt-52">
         <div className="flex flex-wrap items-center gap-4 mb-4">
           {/* <img
@@ -258,10 +256,12 @@ function CoinContent() {
               tokenMint={tokenMint as string}
               setMcap={setMcap}
             />
-            <div className="mt-6">
+            <div className="mt-6 max-h-[400px] overflow-y-auto">
               <Table>
-                <TableCaption>The latest txs on this token.</TableCaption>
-                <TableHeader>
+                <TableCaption className="sticky bottom-0 bg-primary-gradient">
+                  The latest txs on this token.
+                </TableCaption>
+                <TableHeader className="sticky top-0 bg-primary-gradient">
                   <TableRow>
                     <TableHead>Type</TableHead>
                     <TableHead>Amount (SOL)</TableHead>

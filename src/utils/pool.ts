@@ -34,7 +34,7 @@ export async function fetchPoolData(
       reserveToken: parseInt((stateData.reserveToken).toString())
     };
   } catch (error) {
-    console.error('Error fetching pool data:', error);
+    console.log('Error fetching pool data:', error);
     throw error;
   }
 }
@@ -65,7 +65,7 @@ export const subscribeToPoolUpdates = async (
           const poolData = await fetchPoolData(program, tokenMint);
           callback(poolData);
         } catch (error) {
-          console.error('Error processing pool update:', error);
+          console.log('Error processing pool update:', error);
         }
       },
       'confirmed'
@@ -73,7 +73,7 @@ export const subscribeToPoolUpdates = async (
 
     return subscriptionId;
   } catch (error) {
-    console.error('Error in subscribeToPoolUpdates:', error);
+    console.log('Error in subscribeToPoolUpdates:', error);
     throw error;
   }
 };
@@ -144,7 +144,7 @@ export const subscribeToPoolTransactions = async (
                 const transactionType: 'BUY' | 'SELL' = solDifference.gt(new BN(0)) ? 'BUY' : 'SELL';
                 
                 const rawSolAmount = Math.abs(parseInt(solDifference.toString())) / 1e9;
-                const solAmount = rawSolAmount * (101/100);
+                const solAmount = transactionType === 'SELL' ? rawSolAmount*(99/100) : rawSolAmount * (101/100);
                 
                 const transaction = {
                   type: transactionType,
@@ -162,7 +162,7 @@ export const subscribeToPoolTransactions = async (
 
           lastReserveSol = currentReserveSol;
         } catch (error) {
-          console.error('Error processing pool update:', error);
+          console.log('Error processing pool update:', error);
         }
       },
       'confirmed'
@@ -170,7 +170,60 @@ export const subscribeToPoolTransactions = async (
 
     return subscriptionId;
   } catch (error) {
-    console.error('Error in subscribeToPoolTransactions:', error);
+    console.log('Error in subscribeToPoolTransactions:', error);
     throw error;
+  }
+};
+
+export const fetchHistoricalTransactions = async (
+  program: Program<AiAgent>,
+  tokenMint: string,
+  limit: number = 15
+) => {
+  console.log('Fetching historical transactions...');
+  try {
+    const mintPubkey = new PublicKey(tokenMint);
+    const [poolPda] = PublicKey.findProgramAddressSync(
+      [Buffer.from(POOL_SEED_PREFIX), mintPubkey.toBuffer()],
+      program.programId
+    );
+
+    const signatures = await program.provider.connection.getSignaturesForAddress(
+      poolPda,
+      { limit },
+      'confirmed'
+    );
+    const sigs = signatures.map(sig => sig.signature)
+    const transactions = await Promise.all(sigs.map(sig => program.provider.connection.getTransaction(sig,{ maxSupportedTransactionVersion: 0 })))
+
+    console.log(transactions)
+
+     const txs = transactions.map((txDetails) => {
+        if (txDetails) {
+          const accountKeys = txDetails.transaction.message.getAccountKeys();
+          
+          const preBalance = txDetails.meta?.preBalances[0] || 0;
+          const postBalance = txDetails.meta?.postBalances[0] || 0;
+          const solDifference = postBalance - preBalance;
+          
+          const transactionType: 'BUY' | 'SELL' = solDifference > 0 ? 'SELL' : 'BUY';
+          const rawSolAmount = Math.abs(parseInt(solDifference.toString())) / 1e9;
+          const solAmount = rawSolAmount;
+
+          return {
+            type: transactionType,
+            timestamp: txDetails.blockTime || Date.now() / 1000,
+            solAmount,
+            walletAddress: accountKeys.get(0)?.toString() || 'Unknown',
+            price: 0,
+          };
+        }
+        return null;
+      })
+
+    return txs.filter((tx): tx is NonNullable<typeof tx> => tx !== null);
+  } catch (error) {
+    console.log('Error fetching historical transactions:', error);
+    return [];
   }
 };
