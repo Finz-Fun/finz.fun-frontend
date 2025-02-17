@@ -150,8 +150,7 @@ export default function Home() {
         <div className="relative px-4 mx-auto max-w-7xl sm:px-6 lg:px-8">
           <div className="max-w-md mx-auto text-center lg:max-w-lg">
             <p className="text-lg font-normal text-gray-300 sm:text-xl">
-              Explore a curated collection of tokenized contents
-              launched by creators from X (twitter) using AI Agents!
+            Tokenize your social attention - trade tweets & support creators
             </p>
             
             <div className="mt-4 text-md font-light text-gray-300 sm:text-lg">
