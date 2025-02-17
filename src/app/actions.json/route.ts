@@ -5,11 +5,11 @@ export const GET = async () => {
     rules: [
       {
         pathPattern: "/blinks/*",
-        apiPath: `${process.env.NEXT_PUBLIC_API_URL}/blinks/*`,
+        apiPath: `https://api.finz.fun/blinks/*`,
       },
       {
         pathPattern: "/api/blinks/**",
-        apiPath: `${process.env.NEXT_PUBLIC_API_URL}/api/blinks/**`,
+        apiPath: `https://api.finz.fun/api/blinks/**`,
       }
     ],
   };
