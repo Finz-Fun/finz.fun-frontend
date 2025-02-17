@@ -255,6 +255,7 @@ function CoinContent() {
               displayCurrency={displayCurrency}
               tokenMint={tokenMint as string}
               setMcap={setMcap}
+              tokenName={tokenName}
             />
             <div className="mt-6 max-h-[400px] overflow-y-auto">
               <Table>
