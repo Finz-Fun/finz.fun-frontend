@@ -130,40 +130,32 @@ export function LoginForm({
       <Card>
         <CardHeader className="text-center">
           <CardTitle className="text-xl">Setup your AI Agent</CardTitle>
-          {status === "authenticated" ? (
-            <CardDescription>
-              <Button 
-                variant="link" 
-                onClick={handleSignOut}
-                disabled={isLoading}
-              >
-                {isLoading ? "Logging out..." : "Logout"}
-              </Button>
-            </CardDescription>
-          ) : (
-            <CardDescription>
-              <Button 
-                variant="link" 
-                onClick={handleTwitterSignIn}
-                disabled={isLoading}
-              >
-                {isLoading ? "Connecting..." : "Login with your X (twitter) account"}
-              </Button>
-            </CardDescription>
-          )}
         </CardHeader>
         <CardContent>
           <div className="grid gap-6">
-            <div className="flex flex-col gap-4">
-              <Button 
-                variant="outline" 
-                className="w-full"
-                onClick={handleTwitterSignIn}
-                disabled={isLoading || status === "authenticated"}
+            { status === "authenticated" ? (
+              <div className="flex flex-col gap-4">
+                <Button 
+                  variant="outline" 
+                  className="w-full"
+                  onClick={handleSignOut}
+                  disabled={isLoading}
+              >
+                {isLoading ? "Logging out..." : "Logout"}
+              </Button>
+            </div>
+            ) : (
+              <div className="flex flex-col gap-4">
+                <Button 
+                  variant="outline" 
+                  className="w-full"
+                  onClick={handleTwitterSignIn}
+                  disabled={isLoading}
               >
                 {isLoading ? "Connecting..." : "Login with X (twitter)"}
               </Button>
             </div>
+            )}
 
             {status === "authenticated" && (
               <div className="grid gap-6">

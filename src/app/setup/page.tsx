@@ -1,7 +1,7 @@
 'use client'
 
 import { useRouter } from 'next/navigation'
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { useAppKitAccount } from '@reown/appkit/react'
 import { useToast } from "@/hooks/use-toast"
 // import { GalleryVerticalEnd } from "lucide-react"
@@ -12,20 +12,27 @@ export default function Setup() {
   const { isConnected } = useAppKitAccount()
   const router = useRouter()
   const { toast } = useToast()
+  const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
-    if (!isConnected) {
-      toast({
-        title: "Authentication Required",
-        description: "Please connect your wallet to access the setup page",
-        variant: "destructive",
-        duration: 2000,
-      })
-      router.push('/')
-    }
-  }, [isConnected, router])
+    const timer = setTimeout(() => {
+      setIsLoading(false)
+      
+      if (!isConnected) {
+        toast({
+          title: "Authentication Required",
+          description: "Please connect your wallet to access the setup page",
+          variant: "destructive",
+          duration: 2000,
+        })
+        router.push('/')
+      }
+    }, 1000)
 
-  if (!isConnected) {
+    return () => clearTimeout(timer)
+  }, [isConnected, router, toast])
+
+  if (isLoading || !isConnected) {
     return (
       <div className="flex min-h-svh items-center justify-center">
         <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary"></div>
